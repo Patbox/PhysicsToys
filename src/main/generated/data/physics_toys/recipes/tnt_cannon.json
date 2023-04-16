@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "i": {
+      "item": "physics_toys:gravity_gun"
+    },
+    "p": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "p ",
+    "i "
+  ],
+  "result": {
+    "item": "physics_toys:tnt_cannon"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "i": {
+      "item": "minecraft:stick"
+    },
+    "p": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    " p ",
+    "ipi",
+    " i "
+  ],
+  "result": {
+    "item": "physics_toys:baseball_bat"
+  },
+  "show_notification": true
+}

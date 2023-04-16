@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "physics_toys",
+  "version": "${version}",
+  "name": "Physics Toys",
+  "description": "Toy around with physics on your Minecraft server!",
+  "authors": [
+    "Patbox"
+  ],
+  "contact": {
+    "homepage": "https://pb4.eu",
+    "sources": "https://github.com/Patbox/PhysicsToys"
+  },
+
+  "license": "LGPLv3",
+  "icon": "assets/physics_toys/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "eu.pb4.physicstoys.PhysicsToysMod"
+    ],
+    "fabric-datagen": [
+      "eu.pb4.physicstoys.datagen.DataGenInit"
+    ]
+  },
+  "mixins": [
+    "physictoys.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.14",
+    "fabric-api": "*",
+    "minecraft": ">=1.19.4",
+    "rayon": ">=1.7.0",
+    "java": ">=17"
+  }
+}

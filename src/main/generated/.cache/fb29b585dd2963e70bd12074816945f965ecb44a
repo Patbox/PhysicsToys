@@ -1,0 +1,9 @@
+// 1.19.4	2023-04-16T18:19:00.447855846	Physics Toys/Recipes
+25a928b8f3c01fa16ea047414c00ce13d3a94e2a data/physics_toys/advancements/recipes/redstone/tnt.json
+44acf09627ca7b55bc1cf228bf9775c468f08969 data/physics_toys/advancements/recipes/redstone/tnt_cannon.json
+ccd84a10efe41c70caf3c356f754c3da19c73e05 data/physics_toys/advancements/recipes/redstone/baseball_bat.json
+c89b5eab6a55e133e41d6a10b430fc1d4f3d3903 data/physics_toys/recipes/gravity_gun.json
+822eebdf23d063da45c144139f5a2e1df39879fa data/physics_toys/recipes/baseball_bat.json
+aeeb3d5af1aa82812f1cd102b10d3bc7b063c597 data/physics_toys/advancements/recipes/redstone/gravity_gun.json
+9c63ade60ad1e5bf53a34d5f3d44d16b3927839c data/physics_toys/recipes/tnt.json
+f56f6d351ba99f5c769f9acc2738e5e2e018aa74 data/physics_toys/recipes/tnt_cannon.json

@@ -1,0 +1,93 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#minecraft:replaceable_plants",
+      "required": false
+    },
+    {
+      "id": "#minecraft:planks",
+      "required": false
+    },
+    {
+      "id": "#minecraft:logs",
+      "required": false
+    },
+    {
+      "id": "#minecraft:leaves",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wool",
+      "required": false
+    },
+    {
+      "id": "#minecraft:campfires",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wool_carpets",
+      "required": false
+    },
+    {
+      "id": "#minecraft:saplings",
+      "required": false
+    },
+    {
+      "id": "#minecraft:crops",
+      "required": false
+    },
+    {
+      "id": "#minecraft:all_signs",
+      "required": false
+    },
+    {
+      "id": "#minecraft:snow",
+      "required": false
+    },
+    {
+      "id": "#minecraft:banners",
+      "required": false
+    },
+    {
+      "id": "#minecraft:flowers",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_buttons",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_doors",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_fences",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_pressure_plates",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_slabs",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_stairs",
+      "required": false
+    },
+    {
+      "id": "#minecraft:wooden_trapdoors",
+      "required": false
+    },
+    {
+      "id": "#minecraft:beehives",
+      "required": false
+    },
+    "minecraft:bamboo",
+    "minecraft:note_block",
+    "minecraft:jukebox",
+    "minecraft:dead_bush"
+  ]
+}

@@ -1,6 +1,7 @@
 package eu.pb4.physicstoys;
 
 import com.mojang.logging.LogUtils;
+import dev.lazurite.rayon.impl.Rayon;
 import eu.pb4.physicstoys.other.CardboardWarning;
 import eu.pb4.physicstoys.registry.USRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -15,7 +16,7 @@ public class PhysicsToysMod implements ModInitializer {
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
 
     public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.of(MOD_ID, path);
     }
 
     @Override
@@ -23,6 +24,8 @@ public class PhysicsToysMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((s) -> {
             CardboardWarning.checkAndAnnounce();
         });
+
+        Rayon.initialize();
 
         USRegistry.register();
     }

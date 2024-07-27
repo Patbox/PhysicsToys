@@ -6,5 +6,5 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 
 public class PhysicsTags {
-    public static TagKey<Block> IS_FLOATING_ON_WATER = TagKey.of(RegistryKeys.BLOCK, PhysicsToysMod.id("float_in_water"));
+    public static final TagKey<Block> IS_FLOATING_ON_WATER = TagKey.of(RegistryKeys.BLOCK, PhysicsToysMod.id("float_in_water"));
 }

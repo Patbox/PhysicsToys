@@ -10,24 +10,22 @@ import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtHelper;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityInteractor {
-    private static final String TARGET_NBT = "held_entity";
     private static final String PICK_TIME_NBT = "pick_time";
 
     public PhysicsGunItem(Settings settings) {
@@ -41,8 +39,8 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (stack.hasNbt() && stack.getNbt().contains(TARGET_NBT) && entity instanceof ServerPlayerEntity player) {
-            var target = ((ServerWorld) world).getEntity(NbtHelper.toUuid(stack.getNbt().get(TARGET_NBT)));
+        if (stack.contains(USRegistry.TARGET_COMPONENT) && entity instanceof ServerPlayerEntity player) {
+            var target = ((ServerWorld) world).getEntity(stack.get(USRegistry.TARGET_COMPONENT));
             if (target instanceof BasePhysicsEntity basePhysics) {
                 if (selected || player.getOffHandStack() == stack) {
                     basePhysics.setHolder((PlayerEntity) entity);
@@ -60,12 +58,12 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
                     basePhysics.getRigidBody().setPhysicsLocation(previous.mult(0.6f).add(Convert.toBullet(cast.getPos()).mult(0.4f)));
                     basePhysics.getRigidBody().setLinearVelocity(basePhysics.getRigidBody().getFrame().getLocationDelta(new Vector3f()).mult(10));
                 } else {
-                    stack.getNbt().remove(TARGET_NBT);
+                    stack.remove(USRegistry.TARGET_COMPONENT);
                     basePhysics.getRigidBody().activate();
                     basePhysics.setHolder(null);
                 }
             } else {
-                stack.getNbt().remove(TARGET_NBT);
+                stack.remove(USRegistry.TARGET_COMPONENT);
             }
         }
     }
@@ -73,20 +71,20 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         var stack = user.getStackInHand(hand);
-        if (stack.hasNbt() && stack.getNbt().contains(TARGET_NBT)) {
-            var pickTime = stack.getNbt().getLong(PICK_TIME_NBT);
+        if (stack.contains(USRegistry.TARGET_COMPONENT)) {
+            var pickTime = stack.getOrDefault(USRegistry.PICK_TIME_COMPONENT, 0L);
             if (world.getTime() - pickTime < 5) {
                 return TypedActionResult.fail(stack);
             }
 
-            var target = ((ServerWorld) world).getEntity(NbtHelper.toUuid(stack.getNbt().get(TARGET_NBT)));
+            var target = ((ServerWorld) world).getEntity(stack.get(USRegistry.TARGET_COMPONENT));
             if (target instanceof BasePhysicsEntity basePhysics) {
                 basePhysics.getRigidBody().activate();
                 basePhysics.setHolder(null);
-                stack.getNbt().remove(TARGET_NBT);
+                stack.remove(USRegistry.TARGET_COMPONENT);
                 return TypedActionResult.success(stack, true);
             }
-            stack.getNbt().remove(TARGET_NBT);
+            stack.remove(USRegistry.TARGET_COMPONENT);
         }
 
         return TypedActionResult.fail(stack);
@@ -94,25 +92,25 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getStack().hasNbt() && context.getStack().getNbt().contains(TARGET_NBT)) {
+        if (context.getStack().contains(USRegistry.TARGET_COMPONENT)) {
             return ActionResult.FAIL;
         }
 
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
         context.getWorld().setBlockState(context.getBlockPos(), Blocks.AIR.getDefaultState());
-        context.getStack().getNbt().putLong(PICK_TIME_NBT, context.getWorld().getTime());
+        context.getStack().set(USRegistry.PICK_TIME_COMPONENT, context.getWorld().getTime());
 
         if (blockState.isOf(USRegistry.PHYSICAL_TNT_BLOCK)) {
             var vec = Vec3d.ofCenter(context.getBlockPos());
             var entity = PhysicalTntEntity.of(context.getWorld(), vec.x, vec.y, vec.z, context.getPlayer());
             entity.setHolder(context.getPlayer());
-            context.getStack().getOrCreateNbt().put(TARGET_NBT, NbtHelper.fromUuid(entity.getUuid()));
+            context.getStack().set(USRegistry.TARGET_COMPONENT, entity.getUuid());
             context.getWorld().spawnEntity(entity);
         } else {
             var entity = BlockPhysicsEntity.create(context.getWorld(), blockState, context.getBlockPos());
             entity.setDespawnTimer(5 * 20);
             entity.setHolder(context.getPlayer());
-            context.getStack().getOrCreateNbt().put(TARGET_NBT, NbtHelper.fromUuid(entity.getUuid()));
+            context.getStack().set(USRegistry.TARGET_COMPONENT, entity.getUuid());
             context.getWorld().spawnEntity(entity);
         }
         return ActionResult.SUCCESS;
@@ -120,37 +118,36 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
 
     @Override
     public int getPolymerArmorColor(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return itemStack.hasNbt() && itemStack.getNbt().contains(TARGET_NBT) ? 0xffe357 : 0xbd7100;
+        return itemStack.contains(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100;
     }
 
     @Override
     public void onInteractWith(PlayerEntity player, ItemStack stack, Vec3d hitPos, BasePhysicsEntity basePhysics) {
         basePhysics.setOwner(player.getGameProfile());
-        if (stack.hasNbt() && basePhysics.getHolder() == player) {
+        if (stack.contains(USRegistry.TARGET_COMPONENT) && basePhysics.getHolder() == player) {
             basePhysics.setHolder(null);
-            stack.getNbt().remove(TARGET_NBT);
+            stack.remove(USRegistry.TARGET_COMPONENT);
         } else {
-            if (stack.hasNbt() && stack.getNbt().contains(TARGET_NBT)) {
+            if (stack.contains(USRegistry.TARGET_COMPONENT)) {
                 return;
             }
 
-            stack.getOrCreateNbt().put(TARGET_NBT, NbtHelper.fromUuid(basePhysics.getUuid()));
+            stack.set(USRegistry.TARGET_COMPONENT, basePhysics.getUuid());
             basePhysics.setHolder(player);
-            stack.getNbt().putLong(PICK_TIME_NBT, player.world.getTime());
-
+            stack.set(USRegistry.PICK_TIME_COMPONENT, player.getWorld().getTime());
         }
     }
 
     @Override
     public void onAttackWith(ServerPlayerEntity player, ItemStack stack, BasePhysicsEntity basePhysics) {
-        if (stack.hasNbt() && basePhysics.getHolder() == player) {
+        if (stack.contains(USRegistry.TARGET_COMPONENT) && basePhysics.getHolder() == player) {
             basePhysics.getRigidBody().applyCentralImpulse(Convert.toBullet(player.getRotationVec(0).multiply(200)));
             basePhysics.setHolder(null);
             basePhysics.setOwner(player.getGameProfile());
             if (basePhysics instanceof BlockPhysicsEntity blockPhysicsEntity && !(basePhysics instanceof PhysicalTntEntity)) {
                 blockPhysicsEntity.setDespawnTimer(10 * 20);
             }
-            stack.getNbt().remove(TARGET_NBT);
+            stack.remove(USRegistry.TARGET_COMPONENT);
         }
     }
 }

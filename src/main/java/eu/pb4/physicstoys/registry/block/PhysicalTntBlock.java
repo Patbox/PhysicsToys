@@ -7,7 +7,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
@@ -19,8 +18,8 @@ import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -72,12 +71,12 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
 
     }
 
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         if (!world.isClient() && !player.isCreative() && state.get(UNSTABLE)) {
             primeTnt(world, pos);
         }
 
-        super.onBreak(world, pos, state, player);
+        return super.onBreak(world, pos, state, player);
     }
 
     public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
@@ -89,26 +88,23 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
         }
     }
 
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack itemStack = player.getStackInHand(hand);
+    protected ItemActionResult onUseWithItem(ItemStack itemStack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!itemStack.isOf(Items.FLINT_AND_STEEL) && !itemStack.isOf(Items.FIRE_CHARGE)) {
-            return super.onUse(state, world, pos, player, hand, hit);
+            return super.onUseWithItem(itemStack, state, world, pos, player, hand, hit);
         } else {
             primeTnt(world, pos, player);
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 11);
             Item item = itemStack.getItem();
             if (!player.isCreative()) {
                 if (itemStack.isOf(Items.FLINT_AND_STEEL)) {
-                    itemStack.damage(1, player, (playerx) -> {
-                        playerx.sendToolBreakStatus(hand);
-                    });
+                    itemStack.damage(1, player, LivingEntity.getSlotForHand(hand));
                 } else {
                     itemStack.decrement(1);
                 }
             }
 
             player.incrementStat(Stats.USED.getOrCreateStat(item));
-            return ActionResult.success(world.isClient);
+            return ItemActionResult.success(world.isClient);
         }
     }
 
@@ -133,7 +129,7 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
     }
 
     @Override
-    public Block getPolymerBlock(BlockState state) {
-        return Blocks.TNT;
+    public BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.TNT.getDefaultState();
     }
 }

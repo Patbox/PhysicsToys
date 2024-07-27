@@ -30,12 +30,9 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
-import java.util.IdentityHashMap;
 import java.util.function.Consumer;
 
 public class BlockPhysicsEntity extends BasePhysicsEntity {
@@ -99,7 +96,6 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
         this.getRigidBody().setMass(x);
         this.getRigidBody().setBuoyancyType(this.currentBlockState.isIn(PhysicsTags.IS_FLOATING_ON_WATER) ? ElementRigidBody.BuoyancyType.WATER : ElementRigidBody.BuoyancyType.NONE);
-
     }
 
     @Override
@@ -134,7 +130,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
         if (this.currentBlockState == null) {
             return ShapeUtil.CUBE;
         }
-        return ShapeUtil.getBlockShape(this.currentBlockState, this.world, BlockPos.ORIGIN);
+        return ShapeUtil.getBlockShape(this.currentBlockState, this.getWorld(), BlockPos.ORIGIN);
     }
 
     @Override
@@ -145,13 +141,13 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
             var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
             var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
             tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
-            var col = ProjectileUtil.getEntityCollision(this.world, this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile);
+            var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile);
 
             if (col != null) {
                 var d =  this.calculateDamage(delta);
 
                 if (d > 0.2) {
-                    var source = this.getOwner() instanceof PlayerEntity player ? this.world.getDamageSources().playerAttack(player) : this.world.getDamageSources().fallingBlock(this);
+                    var source = this.getOwner() instanceof PlayerEntity player ? this.getWorld().getDamageSources().playerAttack(player) : this.getWorld().getDamageSources().fallingBlock(this);
                     col.getEntity().damage(source, d);
                 }
             }
@@ -165,20 +161,20 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
                 if (this.despawnTimer <= 0) {
                     this.discard();
-                    var current = this.world.getBlockState(this.getBlockPos());
+                    var current = this.getWorld().getBlockState(this.getBlockPos());
 
                     var ownerEntity = this.getOwner() instanceof PlayerEntity player ? player : null;
 
                     var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : this.ownerProfile;
 
-                    if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE_PLANTS) || (current.getBlock() instanceof FluidBlock &&
+                    if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE) || (current.getBlock() instanceof FluidBlock &&
                             (current.getFluidState().isIn(FluidTags.LAVA) || current.getFluidState().isIn(FluidTags.WATER))))
-                            && CommonProtection.canBreakBlock(this.world, this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.world, this.getBlockPos(), profile, ownerEntity)) {
-                        this.world.breakBlock(this.getBlockPos(), true);
-                        this.world.setBlockState(this.getBlockPos(), this.currentBlockState);
+                            && CommonProtection.canBreakBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity)) {
+                        this.getWorld().breakBlock(this.getBlockPos(), true);
+                        this.getWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
                     } else {
-                        BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.world.getBlockEntity(this.getBlockPos()) : null;
-                        Block.dropStacks(this.currentBlockState, this.world, this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
+                        BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getWorld().getBlockEntity(this.getBlockPos()) : null;
+                        Block.dropStacks(this.currentBlockState, this.getWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
                     }
                     return;
                 }

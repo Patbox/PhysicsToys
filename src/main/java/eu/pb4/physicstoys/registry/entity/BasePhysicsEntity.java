@@ -5,56 +5,47 @@ import com.mojang.authlib.GameProfile;
 import dev.lazurite.rayon.api.EntityPhysicsElement;
 import dev.lazurite.rayon.impl.bullet.collision.body.ElementRigidBody;
 import dev.lazurite.rayon.impl.bullet.collision.body.EntityRigidBody;
-import dev.lazurite.rayon.impl.bullet.collision.space.supplier.entity.EntitySupplier;
 import dev.lazurite.rayon.impl.bullet.math.Convert;
 import eu.pb4.physicstoys.PhysicsToysMod;
 import eu.pb4.physicstoys.registry.item.PhysicsEntityInteractor;
-import eu.pb4.physicstoys.registry.item.PhysicsGunItem;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
-import eu.pb4.polymer.virtualentity.api.elements.MarkerElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
 import eu.pb4.polymer.virtualentity.api.tracker.InteractionTrackedData;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.Ownable;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.EntityTrackingListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -134,7 +125,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     }
 
     @Override
-    public void onEntityTrackerTick(Set<EntityTrackingListener> listeners) {
+    public void onEntityTrackerTick(Set<PlayerAssociatedNetworkHandler> listeners) {
         var rot = Convert.toMinecraft(this.getPhysicsRotation(this.storedQuad, 0));
         var trans = this.getBaseTranslation().rotate(rot);
         this.mainDisplayElement.setLeftRotation(rot);
@@ -153,19 +144,8 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         if (this.mainDisplayElement.isDirty()) {
             this.mainDisplayElement.startInterpolation();
         }
-        var vec = this.getPhysicsLocation(new Vector3f(), 0);
-        var oldPos = new Vec3d(vec.x, vec.y, vec.z);
-        vec = this.getPhysicsLocation(vec, 1);
-        var nextPos = new Vec3d(vec.x, vec.y, vec.z);
 
-        var movePacket = VirtualEntityUtils.createMovePacket(this.getId(), oldPos, nextPos, false, 0, 0);
         this.holder.tick();
-
-        if (movePacket != null) {
-            for (var x : listeners) {
-                x.sendPacket(movePacket);
-            }
-        }
     }
 
     protected org.joml.Vector3f getBaseTranslation() {
@@ -200,7 +180,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         var empty = data.isEmpty();
         data.clear();
         if (initial || empty) {
-           // data.add(DataTracker.SerializedEntry.of(EntityTrackedData.NO_GRAVITY, true));
+            //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.NO_GRAVITY, true));
             //data.add(DataTracker.SerializedEntry.of(ArmorStandEntity.ARMOR_STAND_FLAGS, (byte) ArmorStandEntity.MARKER_FLAG));
             //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.SILENT, true));
             data.add(DataTracker.SerializedEntry.of(InteractionTrackedData.HEIGHT, 0f));
@@ -220,7 +200,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     }
 
     @Override
-    public boolean canUsePortals() {
+    public boolean canUsePortals(boolean allowVehicles) {
         return true;
     }
 
@@ -242,7 +222,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
 
         final var vanillaBox = rigidBody.getCurrentMinecraftBoundingBox();
 
-            final var entityPos = Convert.toBullet(entity.getPos().add(0, entity.getBoundingBox().getYLength(), 0));
+            final var entityPos = Convert.toBullet(entity.getPos().add(0, entity.getBoundingBox().getLengthY(), 0));
             final var normal = location.subtract(entityPos).multLocal(new Vector3f(1, 0, 1)).normalize();
 
             final var intersection = entity.getBoundingBox().intersection(vanillaBox);
@@ -281,7 +261,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
             if (stack.getItem() instanceof PhysicsEntityInteractor physicsGunItem) {
                 physicsGunItem.onAttackWith(player, stack, this);
             } else {
-                var x = EnchantmentHelper.getKnockback(player);
+                var x = EnchantmentHelper.getLevel(player.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.KNOCKBACK).orElseThrow(), stack);
                 this.getRigidBody().applyCentralImpulse(Convert.toBullet(player.getRotationVec(0)).mult((x + 1) * 30));
             }
         }
@@ -289,7 +269,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     }
 
     @Override
-    protected void initDataTracker() {}
+    protected void initDataTracker(DataTracker.Builder builder) {}
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
@@ -297,7 +277,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
             nbt.put("Owner", NbtHelper.fromUuid(this.owner));
         }
         if (this.ownerProfile != null) {
-            nbt.put("OwnerProfile", NbtHelper.writeGameProfile(new NbtCompound(), this.ownerProfile));
+            nbt.put("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES.encodeStart(NbtOps.INSTANCE, this.ownerProfile).getOrThrow());
         }
     }
 
@@ -308,7 +288,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         }
 
         if (nbt.contains("OwnerProfile")) {
-            this.ownerProfile = NbtHelper.toGameProfile(nbt.getCompound("OwnerProfile"));
+            this.ownerProfile = Codecs.GAME_PROFILE_WITH_PROPERTIES.parse(NbtOps.INSTANCE, nbt.getCompound("OwnerProfile")).getOrThrow();
         }
     }
 
@@ -327,12 +307,12 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     @Nullable
     @Override
     public Entity getOwner() {
-        return ((ServerWorld) this.world).getEntity(this.owner);
+        return ((ServerWorld) this.getWorld()).getEntity(this.owner);
     }
 
     public void setOwner(UUID owner) {
         this.owner = owner;
-        this.ownerProfile = new GameProfile(owner, null);
+        this.ownerProfile = new GameProfile(owner, "null");
     }
 
     public void setOwner(GameProfile ownerProfile) {

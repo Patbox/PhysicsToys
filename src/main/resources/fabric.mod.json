@@ -12,7 +12,7 @@
     "sources": "https://github.com/Patbox/PhysicsToys"
   },
 
-  "license": "LGPLv3",
+  "license": "LGPL-3.0",
   "icon": "assets/physics_toys/icon.png",
 
   "environment": "*",
@@ -26,14 +26,15 @@
 
   },
   "mixins": [
-    "physictoys.mixins.json"
+    "physictoys.mixins.json",
+    "rayon.mixins.json",
+    "toolbox.mixins.json"
   ],
 
   "depends": {
-    "fabricloader": ">=0.14.14",
+    "fabricloader": "*",
     "fabric-api": "*",
-    "minecraft": ">=1.19.4",
-    "rayon": ">=1.7.0",
-    "java": ">=17"
+    "minecraft": ">=1.21",
+    "java": ">=21"
   }
 }

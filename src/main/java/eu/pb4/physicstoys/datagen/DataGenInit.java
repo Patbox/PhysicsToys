@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.advancement.criterion.InventoryChangedCriterion;
 import net.minecraft.block.Blocks;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
 import net.minecraft.item.Items;
@@ -20,7 +20,6 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.ItemTags;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class DataGenInit implements DataGeneratorEntrypoint {
     @Override
@@ -32,7 +31,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         pack.addProvider(Recipes::new);
     }
 
-    class CBlockTags extends FabricTagProvider.BlockTagProvider {
+    private static class CBlockTags extends FabricTagProvider.BlockTagProvider {
         public CBlockTags(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
             super(output, registriesFuture);
         }
@@ -40,7 +39,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         @Override
         protected void configure(RegistryWrapper.WrapperLookup arg) {
             this.getOrCreateTagBuilder(PhysicsTags.IS_FLOATING_ON_WATER)
-                    .addOptionalTag(BlockTags.REPLACEABLE_PLANTS)
+                    .addOptionalTag(BlockTags.REPLACEABLE)
                     .addOptionalTag(BlockTags.PLANKS)
                     .addOptionalTag(BlockTags.LOGS)
                     .addOptionalTag(BlockTags.LEAVES)
@@ -69,9 +68,9 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         }
     }
 
-    class LootTables extends FabricBlockLootTableProvider {
-        protected LootTables(FabricDataOutput dataOutput) {
-            super(dataOutput);
+    private static class LootTables extends FabricBlockLootTableProvider {
+        protected LootTables(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+            super(dataOutput, registryLookup);
         }
 
         @Override
@@ -80,13 +79,13 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         }
     }
 
-    class Recipes extends FabricRecipeProvider {
-        public Recipes(FabricDataOutput output) {
-            super(output);
+    private static class Recipes extends FabricRecipeProvider {
+        public Recipes(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, registriesFuture);
         }
 
         @Override
-        public void generate(Consumer<RecipeJsonProvider> exporter) {
+        public void generate(RecipeExporter exporter) {
             ShapedRecipeJsonBuilder.create(RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
                     .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.NETHER_STAR))
                     .pattern("pia")

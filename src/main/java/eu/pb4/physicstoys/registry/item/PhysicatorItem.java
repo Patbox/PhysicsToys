@@ -1,7 +1,5 @@
 package eu.pb4.physicstoys.registry.item;
 
-import com.jme3.math.Vector3f;
-import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.block.Block;
@@ -12,7 +10,6 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 public class PhysicatorItem extends Item implements PolymerItem {

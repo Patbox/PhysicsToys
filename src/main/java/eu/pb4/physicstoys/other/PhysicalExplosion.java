@@ -18,7 +18,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -30,7 +29,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 public class PhysicalExplosion extends Explosion {
     private final World world;
@@ -42,7 +40,7 @@ public class PhysicalExplosion extends Explosion {
     private final GameProfile playerProfile;
 
     public PhysicalExplosion(World world, @Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, DestructionType destructionType) {
-        super(world, entity, damageSource, behavior, x, y, z, power, createFire, destructionType);
+        super(world, entity, damageSource, behavior, x, y, z, power, createFire, destructionType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.ENTITY_GENERIC_EXPLODE);
         this.world = world;
         this.power = power;
         this.x = x;
@@ -55,7 +53,7 @@ public class PhysicalExplosion extends Explosion {
 
     @Override
     public void affectWorld(boolean particles) {
-        ((ServerWorld) this.world).playSound(null, this.x, this.y, this.z, Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_GENERIC_EXPLODE), SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F, this.world.random.nextLong());
+        this.world.playSound(null, this.x, this.y, this.z, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F, this.world.random.nextLong());
 
         boolean bl = this.shouldDestroy();
         ((ServerWorld) this.world).spawnParticles(ParticleTypes.EXPLOSION_EMITTER, this.x, this.y, this.z, 0, 1.0D, 0.0D, 0.0D, 1);
@@ -71,7 +69,7 @@ public class PhysicalExplosion extends Explosion {
                 BlockPos blockPos = (BlockPos) var5.next();
                 BlockState blockState = this.world.getBlockState(blockPos);
                 Block block = blockState.getBlock();
-                if (!blockState.isAir() && !blockState.isIn(BlockTags.REPLACEABLE_PLANTS)) {
+                if (!blockState.isAir() && !blockState.isIn(BlockTags.REPLACEABLE)) {
                     var vec = Vec3d.ofCenter(blockPos).subtract(this.x, this.y, this.z);
 
                     var l = vec.length();
@@ -81,7 +79,7 @@ public class PhysicalExplosion extends Explosion {
                     if (vec.lengthSquared() > 1) {
                         this.world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3);
                         block.onDestroyedByExplosion(this.world, blockPos, this);
-                        if (!blockState.isOf(Blocks.TNT) && !blockState.isOf(USRegistry.PHYSICAL_TNT_BLOCK) && !blockState.isIn(BlockTags.REPLACEABLE_PLANTS)
+                        if (!blockState.isOf(Blocks.TNT) && !blockState.isOf(USRegistry.PHYSICAL_TNT_BLOCK) && !blockState.isIn(BlockTags.REPLACEABLE)
                                 && CommonProtection.canBreakBlock(this.world, blockPos, this.playerProfile, this.player)) {
                             var e = BlockPhysicsEntity.create(world, blockState, blockPos);
                             e.setDespawnTimer(20 * 5);

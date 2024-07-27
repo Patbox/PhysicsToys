@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.lazurite.toolbox.impl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "common.BlockStateBaseMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

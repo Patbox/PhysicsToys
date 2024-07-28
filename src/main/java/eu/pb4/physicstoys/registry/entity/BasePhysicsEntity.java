@@ -2,10 +2,10 @@ package eu.pb4.physicstoys.registry.entity;
 
 import com.jme3.math.Vector3f;
 import com.mojang.authlib.GameProfile;
-import dev.lazurite.rayon.api.EntityPhysicsElement;
-import dev.lazurite.rayon.impl.bullet.collision.body.ElementRigidBody;
-import dev.lazurite.rayon.impl.bullet.collision.body.EntityRigidBody;
-import dev.lazurite.rayon.impl.bullet.math.Convert;
+import eu.pb4.rayon.api.EntityPhysicsElement;
+import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
+import eu.pb4.rayon.impl.bullet.collision.body.EntityRigidBody;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.physicstoys.PhysicsToysMod;
 import eu.pb4.physicstoys.registry.item.PhysicsEntityInteractor;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
@@ -15,6 +15,7 @@ import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
+import eu.pb4.polymer.virtualentity.api.tracker.DisplayTrackedData;
 import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
 import eu.pb4.polymer.virtualentity.api.tracker.InteractionTrackedData;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -88,6 +89,9 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         var h = this.getInteractionHeight() / 2;
         this.interactionElement.setSize(w, h);
         this.interactionElement2.setSize(w, -h);
+        this.mainDisplayElement.ignorePositionUpdates();
+        this.interactionElement.ignorePositionUpdates();
+        this.interactionElement2.ignorePositionUpdates();
 
         this.holder.addElement(this.mainDisplayElement);
         this.holder.addElement(this.interactionElement);
@@ -107,6 +111,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         }
 
         this.mainDisplayElement.setInterpolationDuration(type.getTrackTickInterval());
+        this.mainDisplayElement.setTeleportDuration(type.getTrackTickInterval());
 
         this.mainDisplayElement.setTranslation(new org.joml.Vector3f(-0.5f, -0.5f, -0.5f));
         VirtualEntityUtils.addVirtualPassenger(this, this.mainDisplayElement.getEntityId());
@@ -167,12 +172,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
 
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
-        return EntityType.INTERACTION;
-    }
-
-    @Override
-    public void onEntityPacketSent(Consumer<Packet<?>> consumer, Packet<?> packet) {
-        PolymerEntity.super.onEntityPacketSent(consumer, packet);
+        return EntityType.BLOCK_DISPLAY;
     }
 
     @Override
@@ -183,8 +183,9 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
             //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.NO_GRAVITY, true));
             //data.add(DataTracker.SerializedEntry.of(ArmorStandEntity.ARMOR_STAND_FLAGS, (byte) ArmorStandEntity.MARKER_FLAG));
             //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.SILENT, true));
-            data.add(DataTracker.SerializedEntry.of(InteractionTrackedData.HEIGHT, 0f));
-            data.add(DataTracker.SerializedEntry.of(InteractionTrackedData.WIDTH, 0f));
+            data.add(DataTracker.SerializedEntry.of(DisplayTrackedData.HEIGHT, 0f));
+            data.add(DataTracker.SerializedEntry.of(DisplayTrackedData.WIDTH, 0f));
+            data.add(DataTracker.SerializedEntry.of(DisplayTrackedData.TELEPORTATION_DURATION, this.getType().getTrackTickInterval()));
             data.add(DataTracker.SerializedEntry.of(EntityTrackedData.FLAGS, (byte) (1 << EntityTrackedData.INVISIBLE_FLAG_INDEX)));
         }
     }

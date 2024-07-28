@@ -91,7 +91,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
                     .pattern("pia")
                     .pattern("p  ")
                     .input('a', Items.ENDER_EYE)
-                    .input('p', ItemTags.PLANKS)
+                    .input('p', Items.IRON_INGOT)
                     .input('i', Items.NETHER_STAR)
                     .offerTo(exporter);
 
@@ -99,7 +99,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
                     .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
                     .pattern("p ")
                     .pattern("i ")
-                    .input('p', Items.STICK)
+                    .input('p', Items.COPPER_INGOT)
                     .input('i', USRegistry.PHYSICS_GUN_ITEM)
                     .offerTo(exporter);
 

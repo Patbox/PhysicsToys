@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "eu.pb4.rayon.impl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "common.BlockStateBaseMixin",
+    "common.LevelMixin",
+    "common.entity.EntityMixin",
+    "common.entity.ExplosionMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

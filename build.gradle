@@ -60,7 +60,7 @@ dependencies {
 	modImplementation include("eu.pb4:common-protection-api:${project.common_protection_version}")
 	modImplementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}")
 
-	implementation include("com.github.stephengold:Libbulletjme:17.5.4")
+	implementation include("com.github.stephengold:Libbulletjme:21.2.1")
 }
 
 

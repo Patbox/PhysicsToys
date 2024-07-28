@@ -1,7 +1,7 @@
 package eu.pb4.physicstoys;
 
 import com.mojang.logging.LogUtils;
-import dev.lazurite.rayon.impl.Rayon;
+import eu.pb4.rayon.impl.Rayon;
 import eu.pb4.physicstoys.other.CardboardWarning;
 import eu.pb4.physicstoys.registry.USRegistry;
 import net.fabricmc.api.ModInitializer;

@@ -1,6 +1,6 @@
 package eu.pb4.physicstoys.registry.item;
 
-import dev.lazurite.rayon.impl.bullet.math.Convert;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;

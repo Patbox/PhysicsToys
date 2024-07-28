@@ -9,7 +9,7 @@
       "item": "minecraft:nether_star"
     },
     "p": {
-      "tag": "minecraft:planks"
+      "item": "minecraft:iron_ingot"
     }
   },
   "pattern": [

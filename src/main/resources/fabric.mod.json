@@ -7,6 +7,9 @@
   "authors": [
     "Patbox"
   ],
+  "contributors": [
+    "unilock"
+  ],
   "contact": {
     "homepage": "https://pb4.eu",
     "sources": "https://github.com/Patbox/PhysicsToys"
@@ -22,13 +25,12 @@
     ],
     "fabric-datagen": [
       "eu.pb4.physicstoys.datagen.DataGenInit"
-    ],    "preLaunch": ["eu.pb4.physicstoys.other.CardboardWarning"]
-
+    ],
+    "preLaunch": ["eu.pb4.physicstoys.other.CardboardWarning"]
   },
   "mixins": [
     "physictoys.mixins.json",
-    "rayon.mixins.json",
-    "toolbox.mixins.json"
+    "pbrayon.mixins.json"
   ],
 
   "depends": {

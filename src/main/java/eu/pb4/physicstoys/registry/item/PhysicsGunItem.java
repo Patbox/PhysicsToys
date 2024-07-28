@@ -1,7 +1,7 @@
 package eu.pb4.physicstoys.registry.item;
 
 import com.jme3.math.Vector3f;
-import dev.lazurite.rayon.impl.bullet.math.Convert;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.BasePhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;

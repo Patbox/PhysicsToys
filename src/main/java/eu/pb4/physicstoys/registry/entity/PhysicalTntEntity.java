@@ -2,7 +2,7 @@ package eu.pb4.physicstoys.registry.entity;
 
 import com.jme3.math.Vector3f;
 import com.simsilica.mathd.Vec3d;
-import dev.lazurite.rayon.impl.bullet.collision.body.ElementRigidBody;
+import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.physicstoys.other.PhysicalExplosion;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
@@ -15,6 +15,7 @@ import net.minecraft.entity.Ownable;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,11 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
         this.getRigidBody().setBuoyancyType(ElementRigidBody.BuoyancyType.NONE);
         //this.getRigidBody().setProtectGravity(true);
         //this.getRigidBody().setGravity(new Vector3f(0, 10f, 0));
+    }
+
+    @Override
+    protected Text getDefaultName() {
+        return super.getType().getName();
     }
 
     public static PhysicalTntEntity of(World world, double x, double y, double z, @Nullable LivingEntity igniter) {

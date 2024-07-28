@@ -1,9 +1,9 @@
 package eu.pb4.physicstoys.registry.entity;
 
 import com.jme3.math.Vector3f;
-import dev.lazurite.rayon.impl.bullet.collision.body.ElementRigidBody;
-import dev.lazurite.rayon.impl.bullet.collision.body.shape.MinecraftShape;
-import dev.lazurite.rayon.impl.bullet.math.Convert;
+import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
+import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.common.protection.api.CommonProtection;
 import eu.pb4.physicstoys.other.ShapeUtil;
 import eu.pb4.physicstoys.registry.PhysicsTags;
@@ -75,6 +75,11 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     @Override
     public boolean isCollidable() {
         return false;
+    }
+
+    @Override
+    protected Text getDefaultName() {
+        return this.currentBlockState.getBlock().getName();
     }
 
     public void setBlockState(BlockState state) {
@@ -182,7 +187,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
                 this.despawnTimer = this.despawnTimerValue;
             }
         }
-
+        super.tick();
     }
 
     private float calculateDamage(Vector3f delta) {

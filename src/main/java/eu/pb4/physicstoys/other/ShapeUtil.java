@@ -1,6 +1,6 @@
 package eu.pb4.physicstoys.other;
 
-import dev.lazurite.rayon.impl.bullet.collision.body.shape.MinecraftShape;
+import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;

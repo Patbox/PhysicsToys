@@ -2,7 +2,7 @@ package eu.pb4.physicstoys.other;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
-import dev.lazurite.rayon.impl.bullet.math.Convert;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.common.protection.api.CommonProtection;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;

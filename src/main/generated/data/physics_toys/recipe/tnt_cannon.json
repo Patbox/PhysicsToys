@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "i": {
-      "item": "physics_toys:gravity_gun"
-    },
-    "p": {
-      "item": "minecraft:copper_ingot"
-    }
+    "i": "physics_toys:gravity_gun",
+    "p": "minecraft:copper_ingot"
   },
   "pattern": [
     "p ",

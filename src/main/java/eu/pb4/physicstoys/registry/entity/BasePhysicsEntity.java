@@ -23,6 +23,7 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Ownable;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.decoration.DisplayEntity;
@@ -45,6 +46,7 @@ import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Set;
@@ -171,7 +173,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     }
 
     @Override
-    public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
+    public EntityType<?> getPolymerEntityType(PacketContext context) {
         return EntityType.BLOCK_DISPLAY;
     }
 
@@ -262,7 +264,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
             if (stack.getItem() instanceof PhysicsEntityInteractor physicsGunItem) {
                 physicsGunItem.onAttackWith(player, stack, this);
             } else {
-                var x = EnchantmentHelper.getLevel(player.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.KNOCKBACK).orElseThrow(), stack);
+                var x = EnchantmentHelper.getLevel(player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.KNOCKBACK), stack);
                 this.getRigidBody().applyCentralImpulse(Convert.toBullet(player.getRotationVec(0)).mult((x + 1) * 30));
             }
         }
@@ -319,5 +321,10 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     public void setOwner(GameProfile ownerProfile) {
         this.owner = ownerProfile.getId();
         this.ownerProfile = ownerProfile;
+    }
+
+    @Override
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        return false;
     }
 }

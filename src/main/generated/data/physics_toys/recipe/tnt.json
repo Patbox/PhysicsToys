@@ -2,33 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    {
-      "item": "minecraft:ender_eye"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    },
-    {
-      "item": "minecraft:tnt"
-    }
+    "minecraft:ender_eye",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt",
+    "minecraft:tnt"
   ],
   "result": {
     "count": 8,

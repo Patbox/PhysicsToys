@@ -1,13 +1,15 @@
 package eu.pb4.physicstoys.registry.item;
 
 import com.jme3.math.Vector3f;
+import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
 import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.BasePhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
-import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -18,22 +20,20 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
-public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityInteractor {
-    private static final String PICK_TIME_NBT = "pick_time";
-
+public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, PhysicsEntityInteractor {
     public PhysicsGunItem(Settings settings) {
         super(settings);
     }
 
     @Override
-    public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
+    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
         return Items.LEATHER_HORSE_ARMOR;
     }
 
@@ -69,12 +69,12 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         var stack = user.getStackInHand(hand);
         if (stack.contains(USRegistry.TARGET_COMPONENT)) {
             var pickTime = stack.getOrDefault(USRegistry.PICK_TIME_COMPONENT, 0L);
             if (world.getTime() - pickTime < 5) {
-                return TypedActionResult.fail(stack);
+                return ActionResult.FAIL;
             }
 
             var target = ((ServerWorld) world).getEntity(stack.get(USRegistry.TARGET_COMPONENT));
@@ -82,12 +82,12 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
                 basePhysics.getRigidBody().activate();
                 basePhysics.setHolder(null);
                 stack.remove(USRegistry.TARGET_COMPONENT);
-                return TypedActionResult.success(stack, true);
+                return ActionResult.SUCCESS_SERVER;
             }
             stack.remove(USRegistry.TARGET_COMPONENT);
         }
 
-        return TypedActionResult.fail(stack);
+        return ActionResult.FAIL;
     }
 
     @Override
@@ -117,8 +117,8 @@ public class PhysicsGunItem extends Item implements PolymerItem, PhysicsEntityIn
     }
 
     @Override
-    public int getPolymerArmorColor(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return itemStack.contains(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100;
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+        out.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(stack.contains(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100, false));
     }
 
     @Override

@@ -11,10 +11,12 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.advancement.criterion.InventoryChangedCriterion;
 import net.minecraft.block.Blocks;
 import net.minecraft.data.server.recipe.RecipeExporter;
+import net.minecraft.data.server.recipe.RecipeGenerator;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.ItemTags;
@@ -85,39 +87,50 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         }
 
         @Override
-        public void generate(RecipeExporter exporter) {
-            ShapedRecipeJsonBuilder.create(RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
-                    .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.NETHER_STAR))
-                    .pattern("pia")
-                    .pattern("p  ")
-                    .input('a', Items.ENDER_EYE)
-                    .input('p', Items.IRON_INGOT)
-                    .input('i', Items.NETHER_STAR)
-                    .offerTo(exporter);
+        protected RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup registryLookup, RecipeExporter exporter) {
+            return new RecipeGenerator(registryLookup, exporter) {
+                @Override
+                public void generate() {
+                    var itemWrap = registryLookup.getOrThrow(RegistryKeys.ITEM);
+                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
+                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.NETHER_STAR))
+                            .pattern("pia")
+                            .pattern("p  ")
+                            .input('a', Items.ENDER_EYE)
+                            .input('p', Items.IRON_INGOT)
+                            .input('i', Items.NETHER_STAR)
+                            .offerTo(exporter);
 
-            ShapedRecipeJsonBuilder.create(RecipeCategory.REDSTONE, USRegistry.TNT_CANNON_ITEM)
-                    .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
-                    .pattern("p ")
-                    .pattern("i ")
-                    .input('p', Items.COPPER_INGOT)
-                    .input('i', USRegistry.PHYSICS_GUN_ITEM)
-                    .offerTo(exporter);
+                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.TNT_CANNON_ITEM)
+                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
+                            .pattern("p ")
+                            .pattern("i ")
+                            .input('p', Items.COPPER_INGOT)
+                            .input('i', USRegistry.PHYSICS_GUN_ITEM)
+                            .offerTo(exporter);
 
-            ShapedRecipeJsonBuilder.create(RecipeCategory.REDSTONE, USRegistry.BASEBALL_BAT_ITEM)
-                    .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
-                    .pattern(" p ")
-                    .pattern("ipi")
-                    .pattern(" i ")
-                    .input('p', ItemTags.PLANKS)
-                    .input('i', Items.STICK)
-                    .offerTo(exporter);
+                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.BASEBALL_BAT_ITEM)
+                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
+                            .pattern(" p ")
+                            .pattern("ipi")
+                            .pattern(" i ")
+                            .input('p', ItemTags.PLANKS)
+                            .input('i', Items.STICK)
+                            .offerTo(exporter);
 
-            ShapelessRecipeJsonBuilder.create(RecipeCategory.REDSTONE, USRegistry.PHYSICAL_TNT_ITEM, 8)
-                    .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.TNT))
-                    .input(Items.ENDER_EYE)
-                    .input(Items.TNT, 8)
-                    .offerTo(exporter);
+                    ShapelessRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICAL_TNT_ITEM, 8)
+                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.TNT))
+                            .input(Items.ENDER_EYE)
+                            .input(Items.TNT, 8)
+                            .offerTo(exporter);
 
+                }
+            };
+        }
+
+        @Override
+        public String getName() {
+            return "recipe";
         }
     }
 }

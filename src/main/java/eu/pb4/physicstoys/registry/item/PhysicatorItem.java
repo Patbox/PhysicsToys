@@ -2,6 +2,7 @@ package eu.pb4.physicstoys.registry.item;
 
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
@@ -11,14 +12,15 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
-public class PhysicatorItem extends Item implements PolymerItem {
+public class PhysicatorItem extends Item implements VanillaModeledPolymerItem {
     public PhysicatorItem(Settings settings) {
         super(settings);
     }
 
     @Override
-    public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
+    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
         return Items.DEBUG_STICK;
     }
 

@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "i": {
-      "item": "minecraft:stick"
-    },
-    "p": {
-      "tag": "minecraft:planks"
-    }
+    "i": "minecraft:stick",
+    "p": "#minecraft:planks"
   },
   "pattern": [
     " p ",

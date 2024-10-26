@@ -21,6 +21,8 @@ loom {
 			vmArg("-Dfabric-api.datagen.output-dir=${file("src/main/generated")}")
 		}
 	}
+
+	accessWidenerPath = file("src/main/resources/physicstoys.accesswidener")
 }
 
 assemble.dependsOn(runDatagen)

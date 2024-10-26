@@ -29,10 +29,9 @@
     "preLaunch": ["eu.pb4.physicstoys.other.CardboardWarning"]
   },
   "mixins": [
-    "physictoys.mixins.json",
     "pbrayon.mixins.json"
   ],
-
+  "accessWidener": "physicstoys.accesswidener",
   "depends": {
     "fabricloader": "*",
     "fabric-api": "*",

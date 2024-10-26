@@ -12,20 +12,23 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 public class PhysicalTntBlock extends Block implements PolymerBlock {
     public static final BooleanProperty UNSTABLE;
@@ -63,12 +66,12 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
         }
     }
 
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+    @Override
+    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
         if (world.isReceivingRedstonePower(pos)) {
             primeTnt(world, pos);
             world.removeBlock(pos, false);
         }
-
     }
 
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
@@ -79,16 +82,15 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
         return super.onBreak(world, pos, state, player);
     }
 
-    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        if (!world.isClient) {
-            var tntEntity = PhysicalTntEntity.of(world, (double) pos.getX() + 0.5D, pos.getY(), (double) pos.getZ() + 0.5D, explosion.getCausingEntity());
-            int i = tntEntity.getFuse();
-            tntEntity.setFuse((short) (world.random.nextInt(i / 4) + i / 8));
-            world.spawnEntity(tntEntity);
-        }
+    @Override
+    public void onDestroyedByExplosion(ServerWorld world, BlockPos pos, Explosion explosion) {
+        var tntEntity = PhysicalTntEntity.of(world, (double) pos.getX() + 0.5D, pos.getY(), (double) pos.getZ() + 0.5D, explosion.getCausingEntity());
+        int i = tntEntity.getFuse();
+        tntEntity.setFuse((short) (world.random.nextInt(i / 4) + i / 8));
+        world.spawnEntity(tntEntity);
     }
 
-    protected ItemActionResult onUseWithItem(ItemStack itemStack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ActionResult onUseWithItem(ItemStack itemStack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!itemStack.isOf(Items.FLINT_AND_STEEL) && !itemStack.isOf(Items.FIRE_CHARGE)) {
             return super.onUseWithItem(itemStack, state, world, pos, player, hand, hit);
         } else {
@@ -104,15 +106,15 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
             }
 
             player.incrementStat(Stats.USED.getOrCreateStat(item));
-            return ItemActionResult.success(world.isClient);
+            return ActionResult.SUCCESS_SERVER;
         }
     }
 
     public void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
-        if (!world.isClient) {
+        if (world instanceof ServerWorld serverWorld) {
             BlockPos blockPos = hit.getBlockPos();
             Entity entity = projectile.getOwner();
-            if (projectile.isOnFire() && projectile.canModifyAt(world, blockPos)) {
+            if (projectile.isOnFire() && projectile.canModifyAt(serverWorld, blockPos)) {
                 primeTnt(world, blockPos, entity instanceof LivingEntity ? (LivingEntity) entity : null);
                 world.removeBlock(blockPos, false);
             }
@@ -129,7 +131,7 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
     }
 
     @Override
-    public BlockState getPolymerBlockState(BlockState state) {
+    public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
         return Blocks.TNT.getDefaultState();
     }
 }

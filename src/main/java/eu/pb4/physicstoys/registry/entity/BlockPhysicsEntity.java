@@ -25,6 +25,7 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -119,7 +120,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(), nbt.getCompound("BlockState")));
+        this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, nbt.getCompound("BlockState")));
         this.despawnTimerValue = nbt.getInt("DespawnTimerValue");
         this.despawnTimer = nbt.getInt("DespawnTimer");
         super.readCustomDataFromNbt(nbt);
@@ -140,51 +141,53 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
     @Override
     public void tick() {
-        var delta = this.getRigidBody().getFrame().getLocationDelta(new Vector3f());
+        if (this.getWorld() instanceof ServerWorld world) {
+            var delta = this.getRigidBody().getFrame().getLocationDelta(new Vector3f());
 
-        if (delta.lengthSquared() > 0.001) {
-            var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
-            var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
-            tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
-            var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile);
+            if (delta.lengthSquared() > 0.001) {
+                var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
+                var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
+                tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
+                var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile);
 
-            if (col != null) {
-                var d =  this.calculateDamage(delta);
+                if (col != null) {
+                    var d = this.calculateDamage(delta);
 
-                if (d > 0.2) {
-                    var source = this.getOwner() instanceof PlayerEntity player ? this.getWorld().getDamageSources().playerAttack(player) : this.getWorld().getDamageSources().fallingBlock(this);
-                    col.getEntity().damage(source, d);
+                    if (d > 0.2) {
+                        var source = this.getOwner() instanceof PlayerEntity player ? this.getWorld().getDamageSources().playerAttack(player) : this.getWorld().getDamageSources().fallingBlock(this);
+                        col.getEntity().damage(world, source, d);
+                    }
                 }
             }
-        }
 
-        if (this.holdingPlayer != null) {
-            this.despawnTimer = this.despawnTimerValue;
-        } else if (this.despawnTimerValue != -1) {
-            if (delta.lengthSquared() < 0.005f) {
-                this.despawnTimer--;
-
-                if (this.despawnTimer <= 0) {
-                    this.discard();
-                    var current = this.getWorld().getBlockState(this.getBlockPos());
-
-                    var ownerEntity = this.getOwner() instanceof PlayerEntity player ? player : null;
-
-                    var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : this.ownerProfile;
-
-                    if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE) || (current.getBlock() instanceof FluidBlock &&
-                            (current.getFluidState().isIn(FluidTags.LAVA) || current.getFluidState().isIn(FluidTags.WATER))))
-                            && CommonProtection.canBreakBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity)) {
-                        this.getWorld().breakBlock(this.getBlockPos(), true);
-                        this.getWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
-                    } else {
-                        BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getWorld().getBlockEntity(this.getBlockPos()) : null;
-                        Block.dropStacks(this.currentBlockState, this.getWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
-                    }
-                    return;
-                }
-            } else {
+            if (this.holdingPlayer != null) {
                 this.despawnTimer = this.despawnTimerValue;
+            } else if (this.despawnTimerValue != -1) {
+                if (delta.lengthSquared() < 0.005f) {
+                    this.despawnTimer--;
+
+                    if (this.despawnTimer <= 0) {
+                        this.discard();
+                        var current = this.getWorld().getBlockState(this.getBlockPos());
+
+                        var ownerEntity = this.getOwner() instanceof PlayerEntity player ? player : null;
+
+                        var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : this.ownerProfile;
+
+                        if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE) || (current.getBlock() instanceof FluidBlock &&
+                                (current.getFluidState().isIn(FluidTags.LAVA) || current.getFluidState().isIn(FluidTags.WATER))))
+                                && CommonProtection.canBreakBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity)) {
+                            this.getWorld().breakBlock(this.getBlockPos(), true);
+                            this.getWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
+                        } else {
+                            BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getWorld().getBlockEntity(this.getBlockPos()) : null;
+                            Block.dropStacks(this.currentBlockState, this.getWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
+                        }
+                        return;
+                    }
+                } else {
+                    this.despawnTimer = this.despawnTimerValue;
+                }
             }
         }
         super.tick();

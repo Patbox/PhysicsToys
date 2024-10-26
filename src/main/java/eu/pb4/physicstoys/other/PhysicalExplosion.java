@@ -2,11 +2,11 @@ package eu.pb4.physicstoys.other;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
-import eu.pb4.rayon.impl.bullet.math.Convert;
 import eu.pb4.common.protection.api.CommonProtection;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
+import eu.pb4.rayon.impl.bullet.math.Convert;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.block.Block;
@@ -28,9 +28,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
+import net.minecraft.world.explosion.ExplosionImpl;
 import org.jetbrains.annotations.Nullable;
 
-public class PhysicalExplosion extends Explosion {
+import java.util.List;
+
+public class PhysicalExplosion extends ExplosionImpl {
     private final World world;
     private final float power;
     private final double x;
@@ -39,68 +42,43 @@ public class PhysicalExplosion extends Explosion {
     private final PlayerEntity player;
     private final GameProfile playerProfile;
 
-    public PhysicalExplosion(World world, @Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, DestructionType destructionType) {
-        super(world, entity, damageSource, behavior, x, y, z, power, createFire, destructionType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.ENTITY_GENERIC_EXPLODE);
+    public PhysicalExplosion(ServerWorld world, @Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, Vec3d pos, float power, boolean createFire, Explosion.DestructionType destructionType) {
+        super(world, entity, damageSource, behavior, pos, power, createFire, destructionType);
         this.world = world;
         this.power = power;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
         this.player = entity instanceof Ownable && ((Ownable) entity).getOwner() instanceof PlayerEntity player ? player : null;
         this.playerProfile = entity instanceof PhysicalTntEntity physicalTntEntity && physicalTntEntity.ownerProfile != null ? physicalTntEntity.ownerProfile : CommonProtection.UNKNOWN;
     }
 
 
     @Override
-    public void affectWorld(boolean particles) {
-        this.world.playSound(null, this.x, this.y, this.z, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F, this.world.random.nextLong());
+    protected void destroyBlocks(List<BlockPos> positions) {
+        Util.shuffle(positions, this.world.random);
+        for (var blockPos : positions) {
+            var blockState = this.world.getBlockState(blockPos);
+            Block block = blockState.getBlock();
+            if (!blockState.isAir() && !blockState.isIn(BlockTags.REPLACEABLE)) {
+                var vec = Vec3d.ofCenter(blockPos).subtract(this.x, this.y, this.z);
 
-        boolean bl = this.shouldDestroy();
-        ((ServerWorld) this.world).spawnParticles(ParticleTypes.EXPLOSION_EMITTER, this.x, this.y, this.z, 0, 1.0D, 0.0D, 0.0D, 1);
+                var l = vec.length();
 
-        var affectedBlocks = (ObjectArrayList<BlockPos>) this.getAffectedBlocks();
+                vec = vec.normalize().multiply(Math.min(this.power * 120 / l, 400));
 
-        if (bl) {
-            ObjectArrayList<Pair<ItemStack, BlockPos>> objectArrayList = new ObjectArrayList();
-            Util.shuffle(affectedBlocks, this.world.random);
-            ObjectListIterator var5 = affectedBlocks.iterator();
-
-            while (var5.hasNext()) {
-                BlockPos blockPos = (BlockPos) var5.next();
-                BlockState blockState = this.world.getBlockState(blockPos);
-                Block block = blockState.getBlock();
-                if (!blockState.isAir() && !blockState.isIn(BlockTags.REPLACEABLE)) {
-                    var vec = Vec3d.ofCenter(blockPos).subtract(this.x, this.y, this.z);
-
-                    var l = vec.length();
-
-                    vec = vec.normalize().multiply(Math.min(this.power * 120 / l, 400));
-
-                    if (vec.lengthSquared() > 1) {
-                        this.world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3);
-                        block.onDestroyedByExplosion(this.world, blockPos, this);
-                        if (!blockState.isOf(Blocks.TNT) && !blockState.isOf(USRegistry.PHYSICAL_TNT_BLOCK) && !blockState.isIn(BlockTags.REPLACEABLE)
-                                && CommonProtection.canBreakBlock(this.world, blockPos, this.playerProfile, this.player)) {
-                            var e = BlockPhysicsEntity.create(world, blockState, blockPos);
-                            e.setDespawnTimer(20 * 5);
-                            e.getRigidBody().applyCentralImpulse(Convert.toBullet(vec));
-                            this.world.spawnEntity(e);
-                        }
+                if (vec.lengthSquared() > 1) {
+                    this.world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3);
+                    block.onDestroyedByExplosion((ServerWorld) this.world, blockPos, this);
+                    if (!blockState.isOf(Blocks.TNT) && !blockState.isOf(USRegistry.PHYSICAL_TNT_BLOCK) && !blockState.isIn(BlockTags.REPLACEABLE)
+                            && CommonProtection.canBreakBlock(this.world, blockPos, this.playerProfile, this.player)) {
+                        var e = BlockPhysicsEntity.create(world, blockState, blockPos);
+                        e.setDespawnTimer(20 * 5);
+                        e.getRigidBody().applyCentralImpulse(Convert.toBullet(vec));
+                        this.world.spawnEntity(e);
                     }
-
-
-                    this.world.getProfiler().pop();
                 }
             }
-
-            var5 = objectArrayList.iterator();
-
-            while (var5.hasNext()) {
-                Pair<ItemStack, BlockPos> pair = (Pair) var5.next();
-                Block.dropStack(this.world, pair.getSecond(), pair.getFirst());
-            }
-
-            this.clearAffectedBlocks();
         }
     }
 }

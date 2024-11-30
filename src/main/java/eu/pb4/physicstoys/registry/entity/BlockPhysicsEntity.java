@@ -203,11 +203,10 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    protected Box calculateBoundingBox() {
+    protected Box calculateDefaultBoundingBox(Vec3d pos) {
         if (this.getRigidBody() == null) {
-            return super.calculateBoundingBox();
+            return super.calculateDefaultBoundingBox(pos);
         }
-
         return this.getRigidBody().getCurrentMinecraftBoundingBox();
     }
 

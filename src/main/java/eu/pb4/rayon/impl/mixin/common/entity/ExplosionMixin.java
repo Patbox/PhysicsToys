@@ -24,7 +24,7 @@ public class ExplosionMixin {
             method = "damageEntities",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V"
+                    target = "Lnet/minecraft/entity/Entity;addVelocity(Lnet/minecraft/util/math/Vec3d;)V"
             )
     )
     public Vec3d setVelocity(Vec3d velocity, @Local Entity entity) {

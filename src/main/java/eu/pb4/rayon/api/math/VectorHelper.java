@@ -68,9 +68,9 @@ public class VectorHelper {
      */
     public static Vector3f fromTag(NbtCompound tag) {
         return new Vector3f(
-                tag.getFloat("x"),
-                tag.getFloat("y"),
-                tag.getFloat("z")
+                tag.getFloat("x", 0),
+                tag.getFloat("y", 0),
+                tag.getFloat("z", 0)
         );
     }
 }

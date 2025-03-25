@@ -120,9 +120,9 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, nbt.getCompound("BlockState")));
-        this.despawnTimerValue = nbt.getInt("DespawnTimerValue");
-        this.despawnTimer = nbt.getInt("DespawnTimer");
+        this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, nbt.getCompoundOrEmpty("BlockState")));
+        this.despawnTimerValue = nbt.getInt("DespawnTimerValue", 0);
+        this.despawnTimer = nbt.getInt("DespawnTimer", 0);
         super.readCustomDataFromNbt(nbt);
     }
 

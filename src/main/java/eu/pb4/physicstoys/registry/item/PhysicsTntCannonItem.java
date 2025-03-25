@@ -47,6 +47,6 @@ public class PhysicsTntCannonItem extends Item implements VanillaModeledPolymerI
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
-        out.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0xFF2222, false));
+        out.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0xFF2222));
     }
 }

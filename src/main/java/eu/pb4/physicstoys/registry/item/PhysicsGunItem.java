@@ -11,6 +11,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,11 +39,11 @@ public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, P
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
         if (stack.contains(USRegistry.TARGET_COMPONENT) && entity instanceof ServerPlayerEntity player) {
             var target = ((ServerWorld) world).getEntity(stack.get(USRegistry.TARGET_COMPONENT));
             if (target instanceof BasePhysicsEntity basePhysics) {
-                if (selected || player.getOffHandStack() == stack) {
+                if (slot != null) {
                     basePhysics.setHolder((PlayerEntity) entity);
                     HitResult cast;// = entity.raycast(3, 0, false);
                     {
@@ -118,7 +119,7 @@ public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, P
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
-        out.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(stack.contains(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100, false));
+        out.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(stack.contains(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100));
     }
 
     @Override

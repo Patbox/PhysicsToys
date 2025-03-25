@@ -57,13 +57,13 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
 
     public void readTagInfo(NbtCompound tag) {
         if (tag.contains("orientation")) {
-            this.setPhysicsRotation(Convert.toBullet(QuaternionHelper.fromTag(tag.getCompound("orientation"))));
+            this.setPhysicsRotation(Convert.toBullet(QuaternionHelper.fromTag(tag.getCompoundOrEmpty("orientation"))));
         }
         if (tag.contains("linearVelocity")) {
-            this.setLinearVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompound("linearVelocity"))));
+            this.setLinearVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompoundOrEmpty("linearVelocity"))));
         }
         if (tag.contains("angularVelocity")) {
-            this.setAngularVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompound("angularVelocity"))));
+            this.setAngularVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompoundOrEmpty("angularVelocity"))));
         }
 //        this.setMass(tag.getFloat("mass"));
 //        this.setDragCoefficient(tag.getFloat("dragCoefficient"));

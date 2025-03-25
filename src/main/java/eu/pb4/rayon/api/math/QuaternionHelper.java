@@ -94,7 +94,7 @@ public class QuaternionHelper {
      * @return the new {@link Quaternionf}
      */
     public static Quaternionf fromTag(NbtCompound tag) {
-        return new Quaternionf(tag.getFloat("i"), tag.getFloat("j"), tag.getFloat("k"), tag.getFloat("r"));
+        return new Quaternionf(tag.getFloat("i", 0), tag.getFloat("j", 0), tag.getFloat("k", 0), tag.getFloat("r", 0));
     }
 
     /**

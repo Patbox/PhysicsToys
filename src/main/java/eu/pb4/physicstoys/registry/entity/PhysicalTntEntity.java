@@ -41,9 +41,6 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
         var self = new PhysicalTntEntity(USRegistry.TNT_ENTITY, world);
         self.setPosition(x, y, z);
         self.setFuse(DEFAULT_FUSE);
-        self.prevX = x;
-        self.prevY = y;
-        self.prevZ = z;
         self.causingEntity = igniter;
         return self;
     }
@@ -108,7 +105,7 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.setFuse(nbt.getShort("Fuse"));
+        this.setFuse(nbt.getShort("Fuse", (short) 0));
         super.readCustomDataFromNbt(nbt);
     }
 

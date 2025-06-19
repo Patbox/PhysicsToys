@@ -26,6 +26,8 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -33,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -74,7 +77,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    public boolean isCollidable() {
+    public boolean isCollidable(@Nullable Entity entity) {
         return false;
     }
 
@@ -105,11 +108,11 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.put("BlockState", NbtHelper.fromBlockState(this.currentBlockState));
-        nbt.putInt("DespawnTimerValue", this.despawnTimerValue);
-        nbt.putInt("DespawnTimer", this.despawnTimer);
-        super.writeCustomDataToNbt(nbt);
+    protected void writeCustomData(WriteView view) {
+        view.put("BlockState", NbtCompound.CODEC, NbtHelper.fromBlockState(this.currentBlockState));
+        view.putInt("DespawnTimerValue", this.despawnTimerValue);
+        view.putInt("DespawnTimer", this.despawnTimer);
+        super.writeCustomData(view);
     }
 
     @Override
@@ -119,11 +122,12 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, nbt.getCompoundOrEmpty("BlockState")));
-        this.despawnTimerValue = nbt.getInt("DespawnTimerValue", 0);
-        this.despawnTimer = nbt.getInt("DespawnTimer", 0);
-        super.readCustomDataFromNbt(nbt);
+    protected void readCustomData(ReadView view) {
+
+        view.read("BlockState", NbtCompound.CODEC).ifPresent(x ->this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, x)));
+        this.despawnTimerValue = view.getInt("DespawnTimerValue", 0);
+        this.despawnTimer = view.getInt("DespawnTimer", 0);
+        super.readCustomData(view);
     }
 
     @Override
@@ -148,7 +152,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
                 var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
                 var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
                 tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
-                var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile);
+                var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile,0.03f);
 
                 if (col != null) {
                     var d = this.calculateDamage(delta);

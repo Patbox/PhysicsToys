@@ -8,7 +8,11 @@ import eu.pb4.rayon.api.math.QuaternionHelper;
 import eu.pb4.rayon.api.math.VectorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.util.dynamic.Codecs;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+    @Shadow protected abstract void tickInVoid();
+
     @Inject(method = "pushAwayFrom", at = @At("HEAD"), cancellable = true)
     public void pushAwayFrom(Entity entity, CallbackInfo info) {
         if (EntityPhysicsElement.is((Entity) (Object) this) && EntityPhysicsElement.is(entity)) {
@@ -33,27 +39,27 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    public void saveWithoutId(NbtCompound tag, CallbackInfoReturnable<NbtCompound> info) {
+    @Inject(method = "writeData", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomData(Lnet/minecraft/storage/WriteView;)V"))
+    public void saveWithoutId(WriteView view, CallbackInfo ci) {
         if (EntityPhysicsElement.is((Entity) (Object) this)) {
             var rigidBody = EntityPhysicsElement.get((Entity) (Object) this).getRigidBody();
-            tag.put("orientation", QuaternionHelper.toTag(Convert.toMinecraft(rigidBody.getPhysicsRotation(new Quaternion()))));
-            tag.put("linearVelocity", VectorHelper.toTag(Convert.toMinecraft(rigidBody.getLinearVelocity(new Vector3f()))));
-            tag.put("angularVelocity", VectorHelper.toTag(Convert.toMinecraft(rigidBody.getAngularVelocity(new Vector3f()))));
-            tag.putFloat("mass", rigidBody.getMass());
-            tag.putFloat("dragCoefficient", rigidBody.getDragCoefficient());
-            tag.putFloat("friction", rigidBody.getFriction());
-            tag.putFloat("restitution", rigidBody.getRestitution());
-            tag.putBoolean("terrainLoadingEnabled", rigidBody.terrainLoadingEnabled());
-            tag.putInt("buoyancyType", rigidBody.getBuoyancyType().ordinal());
-            tag.putInt("dragType", rigidBody.getDragType().ordinal());
+            view.put("orientation", Codecs.QUATERNION_F, Convert.toMinecraft(rigidBody.getPhysicsRotation(new Quaternion())));
+            view.put("linearVelocity", Codecs.VECTOR_3F, Convert.toMinecraft(rigidBody.getLinearVelocity(new Vector3f())));
+            view.put("angularVelocity", Codecs.VECTOR_3F, Convert.toMinecraft(rigidBody.getAngularVelocity(new Vector3f())));
+            view.putFloat("mass", rigidBody.getMass());
+            view.putFloat("dragCoefficient", rigidBody.getDragCoefficient());
+            view.putFloat("friction", rigidBody.getFriction());
+            view.putFloat("restitution", rigidBody.getRestitution());
+            view.putBoolean("terrainLoadingEnabled", rigidBody.terrainLoadingEnabled());
+            view.putInt("buoyancyType", rigidBody.getBuoyancyType().ordinal());
+            view.putInt("dragType", rigidBody.getDragType().ordinal());
         }
     }
 
-    @Inject(method = "readNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    public void load(NbtCompound tag, CallbackInfo info) {
+    @Inject(method = "readData", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomData(Lnet/minecraft/storage/ReadView;)V"))
+    public void load(ReadView view, CallbackInfo ci) {
         if (EntityPhysicsElement.is((Entity) (Object) this)) {
-            EntityPhysicsElement.get((Entity) (Object) this).getRigidBody().readTagInfo(tag);
+            EntityPhysicsElement.get((Entity) (Object) this).getRigidBody().readTagInfo(view);
         }
     }
 }

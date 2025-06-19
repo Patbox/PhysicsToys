@@ -12,6 +12,8 @@ import eu.pb4.rayon.impl.util.Frame;
 import eu.pb4.rayon.api.math.QuaternionHelper;
 import eu.pb4.rayon.api.math.VectorHelper;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -55,16 +57,11 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
         return this.element;
     }
 
-    public void readTagInfo(NbtCompound tag) {
-        if (tag.contains("orientation")) {
-            this.setPhysicsRotation(Convert.toBullet(QuaternionHelper.fromTag(tag.getCompoundOrEmpty("orientation"))));
-        }
-        if (tag.contains("linearVelocity")) {
-            this.setLinearVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompoundOrEmpty("linearVelocity"))));
-        }
-        if (tag.contains("angularVelocity")) {
-            this.setAngularVelocity(Convert.toBullet(VectorHelper.fromTag(tag.getCompoundOrEmpty("angularVelocity"))));
-        }
+    public void readTagInfo(ReadView view) {
+        view.read("orientation", Codecs.QUATERNION_F).map(Convert::toBullet).ifPresent(this::setPhysicsRotation);
+        view.read("linearVelocity", Codecs.VECTOR_3F).map(Convert::toBullet).ifPresent(this::setLinearVelocity);
+        view.read("angularVelocity", Codecs.VECTOR_3F).map(Convert::toBullet).ifPresent(this::setAngularVelocity);
+
 //        this.setMass(tag.getFloat("mass"));
 //        this.setDragCoefficient(tag.getFloat("dragCoefficient"));
 //        this.setFriction(tag.getFloat("friction"));

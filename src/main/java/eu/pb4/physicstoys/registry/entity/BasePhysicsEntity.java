@@ -39,6 +39,8 @@ import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -277,23 +279,18 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     protected void initDataTracker(DataTracker.Builder builder) {}
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        if (this.owner != null) {
-            nbt.put("Owner", Uuids.CODEC, this.owner);
-        }
-        if (this.ownerProfile != null) {
-            nbt.put("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES, this.ownerProfile);
-        }
+    protected void readCustomData(ReadView view) {
+        this.owner = view.read("Owner", Uuids.STRICT_CODEC).orElse(null);
+        this.ownerProfile = view.read("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES).orElse(null);
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        if (nbt.contains("Owner")) {
-            this.owner = nbt.get("Owner", Uuids.STRICT_CODEC).orElse(null);
+    protected void writeCustomData(WriteView view) {
+        if (this.owner != null) {
+            view.put("Owner", Uuids.CODEC, this.owner);
         }
-
-        if (nbt.contains("OwnerProfile")) {
-            this.ownerProfile = nbt.get("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES).orElse(null);
+        if (this.ownerProfile != null) {
+            view.put("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES, this.ownerProfile);
         }
     }
 

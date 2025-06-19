@@ -40,7 +40,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup arg) {
-            this.getOrCreateTagBuilder(PhysicsTags.IS_FLOATING_ON_WATER)
+            this.valueLookupBuilder(PhysicsTags.IS_FLOATING_ON_WATER)
                     .addOptionalTag(BlockTags.REPLACEABLE)
                     .addOptionalTag(BlockTags.PLANKS)
                     .addOptionalTag(BlockTags.LOGS)

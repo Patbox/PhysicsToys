@@ -12,6 +12,8 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -98,15 +100,15 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putShort("Fuse", (short) this.getFuse());
-        super.writeCustomDataToNbt(nbt);
+    protected void writeCustomData(WriteView view) {
+        view.putShort("Fuse", (short) this.getFuse());
+        super.writeCustomData(view);
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.setFuse(nbt.getShort("Fuse", (short) 0));
-        super.readCustomDataFromNbt(nbt);
+    protected void readCustomData(ReadView view) {
+        this.setFuse(view.getShort("Fuse", (short) 0));
+        super.readCustomData(view);
     }
 
     @Nullable

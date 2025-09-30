@@ -39,7 +39,7 @@ public class SectionPosUtil {
     }
 
     public static ChunkSectionPos of(Entity entity) {
-        return SectionPosUtil.of(entity.getPos());
+        return SectionPosUtil.of(entity.getEntityPos());
     }
 
     protected SectionPosUtil() { }

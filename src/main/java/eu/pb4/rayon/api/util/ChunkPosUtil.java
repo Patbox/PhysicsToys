@@ -37,7 +37,7 @@ public class ChunkPosUtil {
     }
 
     public static ChunkPos of(Entity entity) {
-        return ChunkPosUtil.of(entity.getPos());
+        return ChunkPosUtil.of(entity.getEntityPos());
     }
 
     protected ChunkPosUtil() { }

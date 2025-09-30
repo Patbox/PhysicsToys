@@ -8,6 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
+import net.minecraft.particle.BlockParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -15,6 +16,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
+import net.minecraft.util.collection.Pool;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
@@ -71,29 +73,30 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
         ((BlockDisplayElement) this.mainDisplayElement).setBlockState(this.fuse / 5 % 2 == 0 ? Blocks.WHITE_CONCRETE.getDefaultState() : Blocks.TNT.getDefaultState());
         if (i <= 0) {
             this.discard();
-            if (!this.getWorld().isClient) {
+            if (!this.getEntityWorld().isClient()) {
                 this.explode();
             }
         } else {
             this.updateWaterState();
-            ((ServerWorld) this.getWorld()).spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.25D, this.getZ(), 0, 0.0D, 0.0D, 0.0D, 0);
+            ((ServerWorld) this.getEntityWorld()).spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.25D, this.getZ(), 0, 0.0D, 0.0D, 0.0D, 0);
         }
 
     }
 
     private void explode() {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
             float f = 5F;
             var pos = this.getBoundingBox().getCenter();
 
             var explosion = new PhysicalExplosion(serverWorld, this, null, null, pos, f, false, Explosion.DestructionType.DESTROY_WITH_DECAY);
-            explosion.explode();
+            var c = explosion.explode();
 
             ParticleEffect particleEffect = explosion.isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER;
             for (var player : serverWorld.getPlayers())
                 if (player.squaredDistanceTo(pos) < 4096.0) {
                     var optional = Optional.ofNullable(explosion.getKnockbackByPlayer().get(player));
-                    player.networkHandler.sendPacket(new ExplosionS2CPacket(pos, optional, particleEffect, SoundEvents.ENTITY_GENERIC_EXPLODE));
+                    player.networkHandler.sendPacket(new ExplosionS2CPacket(pos, f, c, optional, particleEffect, SoundEvents.ENTITY_GENERIC_EXPLODE,
+                            Pool.<BlockParticleEffect>builder().add(new BlockParticleEffect(ParticleTypes.POOF, 0.5F, 1.0F)).add(new BlockParticleEffect(ParticleTypes.SMOKE, 1.0F, 1.0F)).build()));
                 }
         }
 

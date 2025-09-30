@@ -1,6 +1,7 @@
 package eu.pb4.physicstoys.registry.entity;
 
 import com.jme3.math.Vector3f;
+import com.mojang.authlib.GameProfile;
 import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
 import eu.pb4.rayon.impl.bullet.math.Convert;
@@ -55,7 +56,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
         entity.setPosition(vec.x, vec.y, vec.z);
         entity.getRigidBody().setLinearVelocity(new Vector3f());
         entity.getRigidBody().setAngularVelocity(new Vector3f());
-        entity.getRigidBody().setPhysicsLocation(Convert.toBullet(entity.getPos()));
+        entity.getRigidBody().setPhysicsLocation(Convert.toBullet(entity.getEntityPos()));
         return entity;
     }
 
@@ -140,25 +141,25 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
         if (this.currentBlockState == null) {
             return ShapeUtil.CUBE;
         }
-        return ShapeUtil.getBlockShape(this.currentBlockState, this.getWorld(), BlockPos.ORIGIN);
+        return ShapeUtil.getBlockShape(this.currentBlockState, this.getEntityWorld(), BlockPos.ORIGIN);
     }
 
     @Override
     public void tick() {
-        if (this.getWorld() instanceof ServerWorld world) {
+        if (this.getEntityWorld() instanceof ServerWorld world) {
             var delta = this.getRigidBody().getFrame().getLocationDelta(new Vector3f());
 
             if (delta.lengthSquared() > 0.001) {
                 var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
                 var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
                 tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
-                var col = ProjectileUtil.getEntityCollision(this.getWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile,0.03f);
+                var col = ProjectileUtil.getEntityCollision(this.getEntityWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile,0.03f);
 
                 if (col != null) {
                     var d = this.calculateDamage(delta);
 
                     if (d > 0.2) {
-                        var source = this.getOwner() instanceof PlayerEntity player ? this.getWorld().getDamageSources().playerAttack(player) : this.getWorld().getDamageSources().fallingBlock(this);
+                        var source = this.getOwner() instanceof PlayerEntity player ? this.getEntityWorld().getDamageSources().playerAttack(player) : this.getEntityWorld().getDamageSources().fallingBlock(this);
                         col.getEntity().damage(world, source, d);
                     }
                 }
@@ -172,20 +173,20 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
                     if (this.despawnTimer <= 0) {
                         this.discard();
-                        var current = this.getWorld().getBlockState(this.getBlockPos());
+                        var current = this.getEntityWorld().getBlockState(this.getBlockPos());
 
                         var ownerEntity = this.getOwner() instanceof PlayerEntity player ? player : null;
 
-                        var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : this.ownerProfile;
+                        var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : new GameProfile(this.ownerProfile.id(), this.ownerProfile.name());
 
                         if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE) || (current.getBlock() instanceof FluidBlock &&
                                 (current.getFluidState().isIn(FluidTags.LAVA) || current.getFluidState().isIn(FluidTags.WATER))))
-                                && CommonProtection.canBreakBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getWorld(), this.getBlockPos(), profile, ownerEntity)) {
-                            this.getWorld().breakBlock(this.getBlockPos(), true);
-                            this.getWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
+                                && CommonProtection.canBreakBlock(this.getEntityWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getEntityWorld(), this.getBlockPos(), profile, ownerEntity)) {
+                            this.getEntityWorld().breakBlock(this.getBlockPos(), true);
+                            this.getEntityWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
                         } else {
-                            BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getWorld().getBlockEntity(this.getBlockPos()) : null;
-                            Block.dropStacks(this.currentBlockState, this.getWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
+                            BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getEntityWorld().getBlockEntity(this.getBlockPos()) : null;
+                            Block.dropStacks(this.currentBlockState, this.getEntityWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
                         }
                         return;
                     }

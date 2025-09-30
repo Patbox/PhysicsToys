@@ -36,7 +36,7 @@ public class BlockPosUtil {
     }
 
     public static BlockPos of(Entity entity) {
-        return BlockPosUtil.of(entity.getPos());
+        return BlockPosUtil.of(entity.getEntityPos());
     }
 
     protected BlockPosUtil() { }

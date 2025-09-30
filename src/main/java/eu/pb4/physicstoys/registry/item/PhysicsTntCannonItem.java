@@ -35,9 +35,9 @@ public class PhysicsTntCannonItem extends Item implements VanillaModeledPolymerI
             if (!user.isCreative()) {
                 user.getInventory().remove(x -> x.isOf(USRegistry.PHYSICAL_TNT_ITEM), 1, new SimpleInventory());
             }
-            var entity = PhysicalTntEntity.of(user.getWorld(), user.getX(), user.getEyeY(), user.getZ(), user);
+            var entity = PhysicalTntEntity.of(user.getEntityWorld(), user.getX(), user.getEyeY(), user.getZ(), user);
             entity.getRigidBody().applyCentralImpulse(Convert.toBullet(user.getRotationVec(0).multiply(350)));
-            user.getWorld().spawnEntity(entity);
+            user.getEntityWorld().spawnEntity(entity);
             user.getItemCooldownManager().set(user.getStackInHand(hand), 5);
             return ActionResult.SUCCESS_SERVER;
         }

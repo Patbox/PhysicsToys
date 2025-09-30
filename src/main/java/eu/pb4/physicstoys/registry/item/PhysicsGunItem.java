@@ -135,7 +135,7 @@ public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, P
 
             stack.set(USRegistry.TARGET_COMPONENT, basePhysics.getUuid());
             basePhysics.setHolder(player);
-            stack.set(USRegistry.PICK_TIME_COMPONENT, player.getWorld().getTime());
+            stack.set(USRegistry.PICK_TIME_COMPONENT, player.getEntityWorld().getTime());
         }
     }
 

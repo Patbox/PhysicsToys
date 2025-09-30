@@ -89,28 +89,28 @@ public final class ServerEventHandler {
 
     public static void onElementAddedToSpace(MinecraftSpace space, ElementRigidBody rigidBody) {
         if (rigidBody instanceof EntityRigidBody entityBody) {
-            final var pos = entityBody.getElement().cast().getPos();
+            final var pos = entityBody.getElement().cast().getEntityPos();
             entityBody.setPhysicsLocation(Convert.toBullet(pos));
         }
     }
 
     public static void onEntityLoad(Entity entity, World world) {
         if (EntityPhysicsElement.is(entity) && !PlayerLookup.tracking(entity).isEmpty()) {
-            var space = MinecraftSpace.get(entity.getWorld());
+            var space = MinecraftSpace.get(entity.getEntityWorld());
             space.getWorkerThread().execute(() -> space.addCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }
 
     public static void onStartTrackingEntity(Entity entity, ServerPlayerEntity player) {
         if (EntityPhysicsElement.is(entity)) {
-            var space = MinecraftSpace.get(entity.getWorld());
+            var space = MinecraftSpace.get(entity.getEntityWorld());
             space.getWorkerThread().execute(() -> space.addCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }
 
     public static void onStopTrackingEntity(Entity entity, ServerPlayerEntity player) {
         if (EntityPhysicsElement.is(entity) && PlayerLookup.tracking(entity).isEmpty()) {
-            var space = MinecraftSpace.get(entity.getWorld());
+            var space = MinecraftSpace.get(entity.getEntityWorld());
             space.getWorkerThread().execute(() -> space.removeCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }

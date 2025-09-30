@@ -50,7 +50,7 @@ public class PhysicalExplosion extends ExplosionImpl {
         this.y = pos.y;
         this.z = pos.z;
         this.player = entity instanceof Ownable && ((Ownable) entity).getOwner() instanceof PlayerEntity player ? player : null;
-        this.playerProfile = entity instanceof PhysicalTntEntity physicalTntEntity && physicalTntEntity.ownerProfile != null ? physicalTntEntity.ownerProfile : CommonProtection.UNKNOWN;
+        this.playerProfile = entity instanceof PhysicalTntEntity physicalTntEntity && physicalTntEntity.ownerProfile != null ? new GameProfile(physicalTntEntity.ownerProfile.id(), physicalTntEntity.ownerProfile.name()) : CommonProtection.UNKNOWN;
     }
 
 

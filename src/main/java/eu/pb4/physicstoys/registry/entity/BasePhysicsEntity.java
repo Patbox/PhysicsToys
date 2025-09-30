@@ -35,6 +35,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -71,7 +72,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
 
     private final EntityAttachment attachment;
     private UUID owner = null;
-    public GameProfile ownerProfile = null;
+    public PlayerConfigEntry ownerProfile = null;
 
     protected final DisplayElement mainDisplayElement = this.createMainDisplayElement();
     protected final InteractionElement interactionElement = InteractionElement.redirect(this);
@@ -229,7 +230,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
 
         final var vanillaBox = rigidBody.getCurrentMinecraftBoundingBox();
 
-            final var entityPos = Convert.toBullet(entity.getPos().add(0, entity.getBoundingBox().getLengthY(), 0));
+            final var entityPos = Convert.toBullet(entity.getEntityPos().add(0, entity.getBoundingBox().getLengthY(), 0));
             final var normal = location.subtract(entityPos).multLocal(new Vector3f(1, 0, 1)).normalize();
 
             final var intersection = entity.getBoundingBox().intersection(vanillaBox);
@@ -281,7 +282,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     @Override
     protected void readCustomData(ReadView view) {
         this.owner = view.read("Owner", Uuids.STRICT_CODEC).orElse(null);
-        this.ownerProfile = view.read("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES).orElse(null);
+        this.ownerProfile = view.read("OwnerProfile", PlayerConfigEntry.CODEC).orElse(null);
     }
 
     @Override
@@ -290,7 +291,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
             view.put("Owner", Uuids.CODEC, this.owner);
         }
         if (this.ownerProfile != null) {
-            view.put("OwnerProfile", Codecs.GAME_PROFILE_WITH_PROPERTIES, this.ownerProfile);
+            view.put("OwnerProfile", PlayerConfigEntry.CODEC, this.ownerProfile);
         }
     }
 
@@ -309,17 +310,12 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     @Nullable
     @Override
     public Entity getOwner() {
-        return ((ServerWorld) this.getWorld()).getEntity(this.owner);
-    }
-
-    public void setOwner(UUID owner) {
-        this.owner = owner;
-        this.ownerProfile = new GameProfile(owner, "null");
+        return ((ServerWorld) this.getEntityWorld()).getEntity(this.owner);
     }
 
     public void setOwner(GameProfile ownerProfile) {
-        this.owner = ownerProfile.getId();
-        this.ownerProfile = ownerProfile;
+        this.owner = ownerProfile.id();
+        this.ownerProfile = new PlayerConfigEntry(ownerProfile);
     }
 
     @Override

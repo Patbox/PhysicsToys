@@ -8,7 +8,7 @@ public class ServerEntitySupplier implements EntitySupplier {
     @Override
     public GameMode getGameType(PlayerEntity player) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
-            return serverPlayer.getWorld().getServer().getPlayerInteractionManager(serverPlayer).getGameMode();
+            return serverPlayer.getEntityWorld().getServer().getPlayerInteractionManager(serverPlayer).getGameMode();
         }
         return GameMode.SURVIVAL;
     }

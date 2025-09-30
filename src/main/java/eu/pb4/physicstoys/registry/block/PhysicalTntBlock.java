@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -48,7 +49,7 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
     }
 
     private static void primeTnt(World world, BlockPos pos, @Nullable LivingEntity igniter) {
-        if (!world.isClient) {
+        if (!world.isClient()) {
             var tntEntity =  PhysicalTntEntity.of(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, igniter);
             world.spawnEntity(tntEntity);
             world.playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -99,7 +100,7 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
             Item item = itemStack.getItem();
             if (!player.isCreative()) {
                 if (itemStack.isOf(Items.FLINT_AND_STEEL)) {
-                    itemStack.damage(1, player, LivingEntity.getSlotForHand(hand));
+                    itemStack.damage(1, player, hand == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 } else {
                     itemStack.decrement(1);
                 }

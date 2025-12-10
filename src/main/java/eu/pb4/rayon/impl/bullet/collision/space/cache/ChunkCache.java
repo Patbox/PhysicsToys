@@ -5,14 +5,13 @@ import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
 import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
 import eu.pb4.rayon.impl.bullet.collision.space.block.BlockProperty;
 import eu.pb4.rayon.impl.bullet.math.Convert;
-import net.minecraft.block.BlockState;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.FluidState;
 
 /**
  * Used for storing block that can be queried during physics execution.
@@ -35,10 +34,10 @@ public interface ChunkCache {
 
         return properties != null ? properties.collidable() :
                 !blockState.isAir() &&
-                !block.canMobSpawnInside(blockState) && (
+                !block.isPossibleToRespawnInThis(blockState) && (
                         blockState.getFluidState().isEmpty() || (
-                                blockState.contains(Properties.WATERLOGGED) &&
-                                blockState.get(Properties.WATERLOGGED)
+                                blockState.hasProperty(BlockStateProperties.WATERLOGGED) &&
+                                blockState.getValue(BlockStateProperties.WATERLOGGED)
                         )
                 );
     }
@@ -55,8 +54,8 @@ public interface ChunkCache {
 
     boolean isActive(BlockPos blockPos);
 
-    record BlockData (World level, BlockPos blockPos, BlockState blockState, MinecraftShape shape) { }
-    record FluidData (World level, BlockPos blockPos, FluidState fluidState) { }
+    record BlockData (Level level, BlockPos blockPos, BlockState blockState, MinecraftShape shape) { }
+    record FluidData (Level level, BlockPos blockPos, FluidState fluidState) { }
 
     class FluidColumn {
         private final FluidData top;
@@ -65,35 +64,35 @@ public interface ChunkCache {
         private final float height;
         private long index;
 
-        public FluidColumn(BlockPos start, World level) {
+        public FluidColumn(BlockPos start, Level level) {
             this.index = Integer.toUnsignedLong(start.getX()) << 32l | Integer.toUnsignedLong(start.getZ());
-            final var cursor = new BlockPos(start).mutableCopy();
+            final var cursor = new BlockPos(start).mutable();
             var fluidState = level.getFluidState(cursor);
 
             // find bottom block
             while (!fluidState.isEmpty()) {
-                cursor.set(cursor.down());
+                cursor.set(cursor.below());
                 fluidState = level.getFluidState(cursor);
             }
 
-            cursor.set(cursor.up()); // the above loop ends at one below the bottom
+            cursor.set(cursor.above()); // the above loop ends at one below the bottom
             fluidState = level.getFluidState(cursor);
             this.bottom = new FluidData(level, new BlockPos(cursor), level.getFluidState(cursor));
 
             // find top block
             while (!fluidState.isEmpty()) {
-                cursor.set(cursor.up());
+                cursor.set(cursor.above());
                 fluidState = level.getFluidState(cursor);
             }
 
-            cursor.set(cursor.down());
+            cursor.set(cursor.below());
             fluidState = level.getFluidState(cursor);
 
             this.top = new FluidData(level, new BlockPos(cursor), fluidState);
             this.height = fluidState.getHeight(level, cursor);
 
             // Water flow direction
-            this.flow = Convert.toBullet(fluidState.getVelocity(level, cursor));
+            this.flow = Convert.toBullet(fluidState.getFlow(level, cursor));
         }
 
         public boolean contains(BlockPos blockPos) {

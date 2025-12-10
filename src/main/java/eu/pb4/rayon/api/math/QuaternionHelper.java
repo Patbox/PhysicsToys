@@ -1,6 +1,6 @@
 package eu.pb4.rayon.api.math;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -75,12 +75,12 @@ public class QuaternionHelper {
     }
 
     /**
-     * Stores the given {@link Quaternionf} into a new {@link NbtCompound}.
+     * Stores the given {@link Quaternionf} into a new {@link CompoundTag}.
      * @param quat the {@link Quaternionf} to store
-     * @return the new {@link NbtCompound}
+     * @return the new {@link CompoundTag}
      */
-    public static NbtCompound toTag(Quaternionf quat) {
-        final var tag = new NbtCompound();
+    public static CompoundTag toTag(Quaternionf quat) {
+        final var tag = new CompoundTag();
         tag.putFloat("i", quat.x());
         tag.putFloat("j", quat.y());
         tag.putFloat("k", quat.z());
@@ -89,12 +89,12 @@ public class QuaternionHelper {
     }
 
     /**
-     * Retrieves a {@link Quaternionf} from the given {@link NbtCompound}.
-     * @param tag the {@link NbtCompound} to retrieve the {@link Quaternionf} from
+     * Retrieves a {@link Quaternionf} from the given {@link CompoundTag}.
+     * @param tag the {@link CompoundTag} to retrieve the {@link Quaternionf} from
      * @return the new {@link Quaternionf}
      */
-    public static Quaternionf fromTag(NbtCompound tag) {
-        return new Quaternionf(tag.getFloat("i", 0), tag.getFloat("j", 0), tag.getFloat("k", 0), tag.getFloat("r", 0));
+    public static Quaternionf fromTag(CompoundTag tag) {
+        return new Quaternionf(tag.getFloatOr("i", 0), tag.getFloatOr("j", 0), tag.getFloatOr("k", 0), tag.getFloatOr("r", 0));
     }
 
     /**

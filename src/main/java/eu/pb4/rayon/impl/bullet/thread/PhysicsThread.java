@@ -7,8 +7,8 @@ import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
 import eu.pb4.rayon.impl.bullet.collision.space.supplier.entity.EntitySupplier;
 import eu.pb4.rayon.impl.bullet.collision.space.supplier.level.LevelSupplier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.minecraft.world.World;
+import net.minecraft.util.thread.ReentrantBlockableEventLoop;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Queue;
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 /**
- * In order to access an instance of this, all you need is a {@link World} or {@link ReentrantThreadExecutor} object.
+ * In order to access an instance of this, all you need is a {@link Level} or {@link ReentrantBlockableEventLoop} object.
  * Calling {@link PhysicsThread#execute} adds a runnable to the queue of tasks and is the main way to execute code on
  * this thread. You can also execute code here by using {@link PhysicsSpaceEvents}.
  * @see PhysicsSpaceEvents
@@ -33,7 +33,7 @@ public class PhysicsThread extends Thread implements Executor {
     public volatile Throwable throwable;
     public volatile boolean running = true;
 
-    public static PhysicsThread get(World level) {
+    public static PhysicsThread get(Level level) {
         return MinecraftSpace.get(level).getWorkerThread();
     }
 

@@ -4,12 +4,12 @@ import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import eu.pb4.rayon.impl.bullet.math.Convert;
-import net.minecraft.util.shape.VoxelShape;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class Triangle {
     private final Vector3f[] vertices;
@@ -31,13 +31,13 @@ public class Triangle {
         }
 
         var vec = new Vector3f();
-        var aabbs = voxelShape.getBoundingBoxes();
+        var aabbs = voxelShape.toAabbs();
         final var triangles = new ArrayList<Triangle>( 6 * 2 * aabbs.size());
 
         for (var box : aabbs) {
-            final var x = box.getLengthX() * 0.5f;
-            final var y = box.getLengthY() * 0.5f;
-            final var z = box.getLengthZ() * 0.5f;
+            final var x = box.getXsize() * 0.5f;
+            final var y = box.getYsize() * 0.5f;
+            final var z = box.getZsize() * 0.5f;
             var center = box.getCenter();
             vec.set((float) center.x, (float) center.y, (float) center.z).subtractLocal(0.5f, 0.5f, 0.5f);
             createBoxMesh((float) x, (float) y, (float) z, vec, triangles::add);

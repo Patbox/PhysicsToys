@@ -1,8 +1,8 @@
 package eu.pb4.rayon.api.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Utility class for dealing with {@link BlockPos}.
@@ -27,16 +27,16 @@ public class BlockPosUtil {
         );
     }
 
-    public static BlockPos of(Vec3d pos) {
+    public static BlockPos of(Vec3 pos) {
         return BlockPosUtil.of(
-                BlockPosUtil.posToBlockCoord(pos.getX()),
-                BlockPosUtil.posToBlockCoord(pos.getY()),
-                BlockPosUtil.posToBlockCoord(pos.getZ())
+                BlockPosUtil.posToBlockCoord(pos.x()),
+                BlockPosUtil.posToBlockCoord(pos.y()),
+                BlockPosUtil.posToBlockCoord(pos.z())
         );
     }
 
     public static BlockPos of(Entity entity) {
-        return BlockPosUtil.of(entity.getEntityPos());
+        return BlockPosUtil.of(entity.position());
     }
 
     protected BlockPosUtil() { }

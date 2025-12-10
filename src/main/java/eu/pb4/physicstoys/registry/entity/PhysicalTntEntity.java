@@ -4,54 +4,56 @@ import eu.pb4.physicstoys.other.PhysicalExplosion;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
-import net.minecraft.particle.BlockParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.collection.Pool;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
+import net.minecraft.core.particles.ExplosionParticleInfo;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
+public class PhysicalTntEntity extends BlockPhysicsEntity implements TraceableEntity {
     private static final int DEFAULT_FUSE = 80;
 
     @Nullable
     private LivingEntity causingEntity;
     private int fuse;
 
-    public PhysicalTntEntity(EntityType<PhysicalTntEntity> entityType, World world) {
+    public PhysicalTntEntity(EntityType<PhysicalTntEntity> entityType, Level world) {
         super((EntityType<BlockPhysicsEntity>) (Object) entityType, world);
-        this.intersectionChecked = true;
-        this.setBlockState(Blocks.TNT.getDefaultState());
+        this.blocksBuilding = true;
+        this.setBlockState(Blocks.TNT.defaultBlockState());
         this.getRigidBody().setMass(8);
         this.getRigidBody().setBuoyancyType(ElementRigidBody.BuoyancyType.NONE);
         //this.getRigidBody().setProtectGravity(true);
         //this.getRigidBody().setGravity(new Vector3f(0, 10f, 0));
     }
 
-    public static PhysicalTntEntity of(World world, double x, double y, double z, @Nullable LivingEntity igniter) {
+    public static PhysicalTntEntity of(Level world, double x, double y, double z, @Nullable LivingEntity igniter) {
         var self = new PhysicalTntEntity(USRegistry.TNT_ENTITY, world);
-        self.setPosition(x, y, z);
+        self.setPos(x, y, z);
         self.setFuse(DEFAULT_FUSE);
         self.causingEntity = igniter;
         return self;
     }
 
     @Override
-    protected Text getDefaultName() {
-        return super.getType().getName();
+    protected Component getTypeName() {
+        return super.getType().getDescription();
     }
 
     @Override
@@ -59,59 +61,59 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
 
     }
 
-    protected MoveEffect getMoveEffect() {
-        return MoveEffect.NONE;
+    protected MovementEmission getMovementEmission() {
+        return MovementEmission.NONE;
     }
 
-    public boolean canHit() {
+    public boolean isPickable() {
         return !this.isRemoved();
     }
 
     public void tick() {
         int i = this.getFuse() - 1;
         this.setFuse(i);
-        ((BlockDisplayElement) this.mainDisplayElement).setBlockState(this.fuse / 5 % 2 == 0 ? Blocks.WHITE_CONCRETE.getDefaultState() : Blocks.TNT.getDefaultState());
+        ((BlockDisplayElement) this.mainDisplayElement).setBlockState(this.fuse / 5 % 2 == 0 ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.TNT.defaultBlockState());
         if (i <= 0) {
             this.discard();
-            if (!this.getEntityWorld().isClient()) {
+            if (!this.level().isClientSide()) {
                 this.explode();
             }
         } else {
-            this.updateWaterState();
-            ((ServerWorld) this.getEntityWorld()).spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.25D, this.getZ(), 0, 0.0D, 0.0D, 0.0D, 0);
+            this.updateInWaterStateAndDoFluidPushing();
+            ((ServerLevel) this.level()).sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.25D, this.getZ(), 0, 0.0D, 0.0D, 0.0D, 0);
         }
 
     }
 
     private void explode() {
-        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
+        if (this.level() instanceof ServerLevel serverWorld) {
             float f = 5F;
             var pos = this.getBoundingBox().getCenter();
 
-            var explosion = new PhysicalExplosion(serverWorld, this, null, null, pos, f, false, Explosion.DestructionType.DESTROY_WITH_DECAY);
+            var explosion = new PhysicalExplosion(serverWorld, this, null, null, pos, f, false, Explosion.BlockInteraction.DESTROY_WITH_DECAY);
             var c = explosion.explode();
 
-            ParticleEffect particleEffect = explosion.isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER;
-            for (var player : serverWorld.getPlayers())
-                if (player.squaredDistanceTo(pos) < 4096.0) {
-                    var optional = Optional.ofNullable(explosion.getKnockbackByPlayer().get(player));
-                    player.networkHandler.sendPacket(new ExplosionS2CPacket(pos, f, c, optional, particleEffect, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                            Pool.<BlockParticleEffect>builder().add(new BlockParticleEffect(ParticleTypes.POOF, 0.5F, 1.0F)).add(new BlockParticleEffect(ParticleTypes.SMOKE, 1.0F, 1.0F)).build()));
+            ParticleOptions particleEffect = explosion.isSmall() ? ParticleTypes.EXPLOSION : ParticleTypes.EXPLOSION_EMITTER;
+            for (var player : serverWorld.players())
+                if (player.distanceToSqr(pos) < 4096.0) {
+                    var optional = Optional.ofNullable(explosion.getHitPlayers().get(player));
+                    player.connection.send(new ClientboundExplodePacket(pos, f, c, optional, particleEffect, SoundEvents.GENERIC_EXPLODE,
+                            WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build()));
                 }
         }
 
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
+    protected void addAdditionalSaveData(ValueOutput view) {
         view.putShort("Fuse", (short) this.getFuse());
-        super.writeCustomData(view);
+        super.addAdditionalSaveData(view);
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        this.setFuse(view.getShort("Fuse", (short) 0));
-        super.readCustomData(view);
+    protected void readAdditionalSaveData(ValueInput view) {
+        this.setFuse(view.getShortOr("Fuse", (short) 0));
+        super.readAdditionalSaveData(view);
     }
 
     @Nullable
@@ -119,7 +121,7 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements Ownable {
         return this.causingEntity;
     }
 
-    protected float getEyeHeight(EntityPose pose, EntityDimensions dimensions) {
+    protected float getEyeHeight(Pose pose, EntityDimensions dimensions) {
         return 0.15F;
     }
 

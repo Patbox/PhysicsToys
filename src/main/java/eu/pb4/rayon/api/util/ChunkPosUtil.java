@@ -1,8 +1,8 @@
 package eu.pb4.rayon.api.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Utility class for dealing with {@link ChunkPos}.
@@ -29,15 +29,15 @@ public class ChunkPosUtil {
         );
     }
 
-    public static ChunkPos of(Vec3d pos) {
+    public static ChunkPos of(Vec3 pos) {
         return ChunkPosUtil.of(
-                ChunkPosUtil.posToChunkCoord(pos.getX()),
-                ChunkPosUtil.posToChunkCoord(pos.getZ())
+                ChunkPosUtil.posToChunkCoord(pos.x()),
+                ChunkPosUtil.posToChunkCoord(pos.z())
         );
     }
 
     public static ChunkPos of(Entity entity) {
-        return ChunkPosUtil.of(entity.getEntityPos());
+        return ChunkPosUtil.of(entity.position());
     }
 
     protected ChunkPosUtil() { }

@@ -7,11 +7,10 @@ import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.shape.Triangle;
 import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
 import eu.pb4.rayon.impl.bullet.math.Convert;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 /**
  * TODO This class is messy af.

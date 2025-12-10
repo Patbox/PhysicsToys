@@ -1,4 +1,2 @@
-accessWidener v1 named
-
-extendable method net/minecraft/world/explosion/ExplosionImpl destroyBlocks (Ljava/util/List;)V
-
+accessWidener	v1	named
+extendable	method	net/minecraft/world/level/ServerExplosion	interactWithBlocks	(Ljava/util/List;)V

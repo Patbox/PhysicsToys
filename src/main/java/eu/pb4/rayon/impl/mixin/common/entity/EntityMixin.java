@@ -4,13 +4,12 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import eu.pb4.rayon.api.EntityPhysicsElement;
 import eu.pb4.rayon.impl.bullet.math.Convert;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import eu.pb4.rayon.api.math.QuaternionHelper;
 import eu.pb4.rayon.api.math.VectorHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.dynamic.Codecs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,9 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Entity.class)
 public abstract class EntityMixin {
-    @Shadow protected abstract void tickInVoid();
+    @Shadow protected abstract void onBelowWorld();
 
-    @Inject(method = "pushAwayFrom", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "push(Lnet/minecraft/world/entity/Entity;)V", at = @At("HEAD"), cancellable = true)
     public void pushAwayFrom(Entity entity, CallbackInfo info) {
         if (EntityPhysicsElement.is((Entity) (Object) this) && EntityPhysicsElement.is(entity)) {
             info.cancel();
@@ -39,13 +38,13 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "writeData", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomData(Lnet/minecraft/storage/WriteView;)V"))
-    public void saveWithoutId(WriteView view, CallbackInfo ci) {
+    @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/world/level/storage/ValueOutput;)V"))
+    public void saveWithoutId(ValueOutput view, CallbackInfo ci) {
         if (EntityPhysicsElement.is((Entity) (Object) this)) {
             var rigidBody = EntityPhysicsElement.get((Entity) (Object) this).getRigidBody();
-            view.put("orientation", Codecs.QUATERNION_F, Convert.toMinecraft(rigidBody.getPhysicsRotation(new Quaternion())));
-            view.put("linearVelocity", Codecs.VECTOR_3F, Convert.toMinecraft(rigidBody.getLinearVelocity(new Vector3f())));
-            view.put("angularVelocity", Codecs.VECTOR_3F, Convert.toMinecraft(rigidBody.getAngularVelocity(new Vector3f())));
+            view.store("orientation", ExtraCodecs.QUATERNIONF_COMPONENTS, Convert.toMinecraft(rigidBody.getPhysicsRotation(new Quaternion())));
+            view.store("linearVelocity", ExtraCodecs.VECTOR3F, Convert.toMinecraft(rigidBody.getLinearVelocity(new Vector3f())));
+            view.store("angularVelocity", ExtraCodecs.VECTOR3F, Convert.toMinecraft(rigidBody.getAngularVelocity(new Vector3f())));
             view.putFloat("mass", rigidBody.getMass());
             view.putFloat("dragCoefficient", rigidBody.getDragCoefficient());
             view.putFloat("friction", rigidBody.getFriction());
@@ -56,8 +55,8 @@ public abstract class EntityMixin {
         }
     }
 
-    @Inject(method = "readData", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomData(Lnet/minecraft/storage/ReadView;)V"))
-    public void load(ReadView view, CallbackInfo ci) {
+    @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/world/level/storage/ValueInput;)V"))
+    public void load(ValueInput view, CallbackInfo ci) {
         if (EntityPhysicsElement.is((Entity) (Object) this)) {
             EntityPhysicsElement.get((Entity) (Object) this).getRigidBody().readTagInfo(view);
         }

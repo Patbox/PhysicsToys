@@ -5,8 +5,8 @@ import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
 import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
 import eu.pb4.rayon.impl.bullet.collision.space.block.BlockProperty;
 import eu.pb4.rayon.impl.bullet.collision.space.cache.ChunkCache;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class TerrainRigidBody extends MinecraftRigidBody {
     private final BlockPos blockPos;

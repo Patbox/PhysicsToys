@@ -2,7 +2,7 @@ package eu.pb4.rayon.api;
 
 import eu.pb4.rayon.impl.bullet.collision.body.EntityRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -24,7 +24,7 @@ public interface EntityPhysicsElement extends PhysicsElement<Entity> {
     @Override
     default MinecraftShape.Convex createShape() {
         final var box = cast().getBoundingBox();
-        return MinecraftShape.convex(box.shrink(box.getLengthX() * 0.25, box.getLengthY() * 0.25, box.getLengthZ() * 0.25));
+        return MinecraftShape.convex(box.contract(box.getXsize() * 0.25, box.getYsize() * 0.25, box.getZsize() * 0.25));
     }
 
     default boolean skipVanillaEntityCollisions() {

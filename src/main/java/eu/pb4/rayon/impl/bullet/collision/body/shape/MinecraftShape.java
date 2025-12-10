@@ -8,18 +8,17 @@ import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import eu.pb4.rayon.impl.bullet.math.Convert;
-import net.minecraft.util.shape.VoxelShape;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface MinecraftShape {
     List<Triangle> getTriangles(Quaternion quaternion);
     float getVolume();
 
-    static Box box(net.minecraft.util.math.Box box) {
+    static Box box(net.minecraft.world.phys.AABB box) {
         return MinecraftShape.box(Convert.toBullet(box));
     }
 
@@ -27,7 +26,7 @@ public interface MinecraftShape {
         return new Box(box);
     }
 
-    static Convex convex(net.minecraft.util.math.Box box) {
+    static Convex convex(net.minecraft.world.phys.AABB box) {
         return MinecraftShape.convex(Convert.toBullet(box));
     }
 

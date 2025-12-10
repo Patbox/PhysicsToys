@@ -1,11 +1,11 @@
 package eu.pb4.rayon.api.util;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Utility class for dealing with {@link ChunkSectionPos}.
+ * Utility class for dealing with {@link SectionPos}.
  * @since 1.2.7
  */
 public class SectionPosUtil {
@@ -18,28 +18,28 @@ public class SectionPosUtil {
         return coord >> 4;
     }
 
-    public static ChunkSectionPos of(int x, int y, int z) {
-        return ChunkSectionPos.from(x, y, z);
+    public static SectionPos of(int x, int y, int z) {
+        return SectionPos.of(x, y, z);
     }
 
-    public static ChunkSectionPos of(double x, double y, double z) {
-        return ChunkSectionPos.from(
+    public static SectionPos of(double x, double y, double z) {
+        return SectionPos.of(
                 SectionPosUtil.posToSectionCoord(x),
                 SectionPosUtil.posToSectionCoord(y),
                 SectionPosUtil.posToSectionCoord(z)
         );
     }
 
-    public static ChunkSectionPos of(Vec3d pos) {
+    public static SectionPos of(Vec3 pos) {
         return SectionPosUtil.of(
-                SectionPosUtil.posToSectionCoord(pos.getX()),
-                SectionPosUtil.posToSectionCoord(pos.getY()),
-                SectionPosUtil.posToSectionCoord(pos.getZ())
+                SectionPosUtil.posToSectionCoord(pos.x()),
+                SectionPosUtil.posToSectionCoord(pos.y()),
+                SectionPosUtil.posToSectionCoord(pos.z())
         );
     }
 
-    public static ChunkSectionPos of(Entity entity) {
-        return SectionPosUtil.of(entity.getEntityPos());
+    public static SectionPos of(Entity entity) {
+        return SectionPosUtil.of(entity.position());
     }
 
     protected SectionPosUtil() { }

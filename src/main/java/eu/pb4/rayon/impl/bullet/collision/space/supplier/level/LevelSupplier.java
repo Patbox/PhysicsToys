@@ -1,15 +1,14 @@
 package eu.pb4.rayon.impl.bullet.collision.space.supplier.level;
 
 import eu.pb4.rayon.impl.bullet.thread.PhysicsThread;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
-
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 /**
  * This interface is what allows the {@link PhysicsThread} to retrieve
- * a list of {@link World} objects without knowing where they come from.
+ * a list of {@link Level} objects without knowing where they come from.
  * In this way, it can be used for client Levels or server Levels and,
  * in the case of immersive portals, it can be used to provide multiple
  * client Levels.
@@ -18,23 +17,23 @@ import java.util.Optional;
  */
 public interface LevelSupplier {
      /**
-      * Provides the complete list of {@link World}s. If
+      * Provides the complete list of {@link Level}s. If
       * there aren't any, it will return an empty list.
-      * @return the list of {@link World}s.
+      * @return the list of {@link Level}s.
       */
-     List<World> getAll();
+     List<Level> getAll();
 
      /**
-      * Provides a specific {@link World} based on the given {@link RegistryKey}.
-      * @param key the {@link RegistryKey} to identify the Level with
-      * @return a {@link World}
+      * Provides a specific {@link Level} based on the given {@link ResourceKey}.
+      * @param key the {@link ResourceKey} to identify the Level with
+      * @return a {@link Level}
       */
-     World get(RegistryKey<World> key);
+     Level get(ResourceKey<Level> key);
 
      /**
-      * Provides a specific {@link World} based on the given {@link RegistryKey}.
-      * @param key the {@link RegistryKey} to identify the Level with
-      * @return an optional {@link World}
+      * Provides a specific {@link Level} based on the given {@link ResourceKey}.
+      * @param key the {@link ResourceKey} to identify the Level with
+      * @return an optional {@link Level}
       */
-     Optional<World> getOptional(RegistryKey<World> key);
+     Optional<Level> getOptional(ResourceKey<Level> key);
 }

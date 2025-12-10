@@ -2,19 +2,19 @@ package eu.pb4.physicstoys.registry.item;
 
 import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
 import eu.pb4.rayon.impl.bullet.math.Convert;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 import eu.pb4.physicstoys.registry.entity.BasePhysicsEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 public class BaseballBatItem extends Item implements VanillaModeledPolymerItem, PhysicsEntityInteractor {
-    public BaseballBatItem(Settings settings) {
+    public BaseballBatItem(Properties settings) {
         super(settings);
     }
 
@@ -24,12 +24,12 @@ public class BaseballBatItem extends Item implements VanillaModeledPolymerItem, 
     }
 
     @Override
-    public void onInteractWith(PlayerEntity player, ItemStack stack, Vec3d hitPos, BasePhysicsEntity basePhysics) {
+    public void onInteractWith(Player player, ItemStack stack, Vec3 hitPos, BasePhysicsEntity basePhysics) {
     }
 
     @Override
-    public void onAttackWith(ServerPlayerEntity player, ItemStack stack, BasePhysicsEntity basePhysics) {
-        basePhysics.getRigidBody().applyCentralImpulse(Convert.toBullet(player.getRotationVec(0).multiply(250 * Math.log(basePhysics.getRigidBody().getMass() * 2))));
+    public void onAttackWith(ServerPlayer player, ItemStack stack, BasePhysicsEntity basePhysics) {
+        basePhysics.getRigidBody().applyCentralImpulse(Convert.toBullet(player.getViewVector(0).scale(250 * Math.log(basePhysics.getRigidBody().getMass() * 2))));
         basePhysics.setOwner(player.getGameProfile());
     }
 }

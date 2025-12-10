@@ -1,10 +1,9 @@
 package eu.pb4.rayon.impl.bullet.collision.space.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public record BlockProperty (float friction, float restitution, boolean collidable, boolean isFullBlock) {
     private static final Map<Block, BlockProperty> blockProperties = new ConcurrentHashMap<>();

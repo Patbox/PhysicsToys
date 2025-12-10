@@ -8,16 +8,15 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class SimpleChunkCache implements ChunkCache {
     private static final Hash.Strategy<BlockPos> QUICK_BLOCK_POS = new Hash.Strategy<>() {
@@ -68,10 +67,10 @@ public class SimpleChunkCache implements ChunkCache {
         final var level = space.getLevel();
         final var blockState = level.getBlockState(blockPos);
 
-        loadBlockData(blockPos.toImmutable(), level, blockState);
+        loadBlockData(blockPos.immutable(), level, blockState);
     }
 
-    private void loadBlockData(BlockPos blockPos, World level, BlockState blockState) {
+    private void loadBlockData(BlockPos blockPos, Level level, BlockState blockState) {
         if (ChunkCache.isValidBlock(blockState)) {
             this.blockData.put(blockPos, new BlockData(level, blockPos, blockState, ShapeCache.getShapeFor(blockState, level, blockPos)));
         } else {
@@ -90,14 +89,14 @@ public class SimpleChunkCache implements ChunkCache {
                 continue;
             }
 
-            final var aabb = rigidBody.getCurrentMinecraftBoundingBox().expand(1.0f + MathHelper.sqrt(rigidBody.getSquaredSpeed()) / 20);
+            final var aabb = rigidBody.getCurrentMinecraftBoundingBox().inflate(1.0f + Mth.sqrt(rigidBody.getSquaredSpeed()) / 20);
 
-            BlockPos.stream(aabb).forEach(blockPos -> {
+            BlockPos.betweenClosedStream(aabb).forEach(blockPos -> {
                 if (this.activePositions.contains(blockPos.asLong())) {
                     return;
                 }
 
-                var pos = blockPos.toImmutable();
+                var pos = blockPos.immutable();
                 this.activeColumn.computeIfAbsent(columnIndex(pos), (a) -> new ObjectArrayList<>(512)).add(pos);
                 this.activePositions.add(pos.asLong());
 

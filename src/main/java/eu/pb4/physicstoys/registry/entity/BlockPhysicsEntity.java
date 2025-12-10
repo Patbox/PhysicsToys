@@ -11,52 +11,52 @@ import eu.pb4.physicstoys.registry.PhysicsTags;
 import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class BlockPhysicsEntity extends BasePhysicsEntity {
-    private BlockState currentBlockState = Blocks.AIR.getDefaultState();
+    private BlockState currentBlockState = Blocks.AIR.defaultBlockState();
     private int despawnTimerValue = -1;
     private int despawnTimer;
 
-    public BlockPhysicsEntity(EntityType<BlockPhysicsEntity> type, World world) {
+    public BlockPhysicsEntity(EntityType<BlockPhysicsEntity> type, Level world) {
         super(type, world);
     }
 
-    public static BlockPhysicsEntity create(World world, BlockState state, BlockPos pos) {
+    public static BlockPhysicsEntity create(Level world, BlockState state, BlockPos pos) {
         var entity = new BlockPhysicsEntity(USRegistry.BLOCK_ENTITY, world);
-        var vec = Vec3d.ofCenter(pos);
+        var vec = Vec3.atCenterOf(pos);
         entity.setBlockState(state);
-        entity.setPosition(vec.x, vec.y, vec.z);
+        entity.setPos(vec.x, vec.y, vec.z);
         entity.getRigidBody().setLinearVelocity(new Vector3f());
         entity.getRigidBody().setAngularVelocity(new Vector3f());
-        entity.getRigidBody().setPhysicsLocation(Convert.toBullet(entity.getEntityPos()));
+        entity.getRigidBody().setPhysicsLocation(Convert.toBullet(entity.position()));
         return entity;
     }
 
@@ -78,12 +78,12 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    public boolean isCollidable(@Nullable Entity entity) {
+    public boolean canBeCollidedWith(@Nullable Entity entity) {
         return false;
     }
 
     @Override
-    protected Text getDefaultName() {
+    protected Component getTypeName() {
         return this.currentBlockState.getBlock().getName();
     }
 
@@ -98,41 +98,41 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     protected void recalculateProperties() {
-        var x = (float) Math.min(Math.max(12f * Math.log1p(Math.max(this.currentBlockState.getBlock().getHardness(), this.currentBlockState.getBlock().getBlastResistance())), 5), 50);
+        var x = (float) Math.min(Math.max(12f * Math.log1p(Math.max(this.currentBlockState.getBlock().defaultDestroyTime(), this.currentBlockState.getBlock().getExplosionResistance())), 5), 50);
 
         if (x < 0 || Float.isNaN(x)) {
             x = 60;
         }
 
         this.getRigidBody().setMass(x);
-        this.getRigidBody().setBuoyancyType(this.currentBlockState.isIn(PhysicsTags.IS_FLOATING_ON_WATER) ? ElementRigidBody.BuoyancyType.WATER : ElementRigidBody.BuoyancyType.NONE);
+        this.getRigidBody().setBuoyancyType(this.currentBlockState.is(PhysicsTags.IS_FLOATING_ON_WATER) ? ElementRigidBody.BuoyancyType.WATER : ElementRigidBody.BuoyancyType.NONE);
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        view.put("BlockState", NbtCompound.CODEC, NbtHelper.fromBlockState(this.currentBlockState));
+    protected void addAdditionalSaveData(ValueOutput view) {
+        view.store("BlockState", CompoundTag.CODEC, NbtUtils.writeBlockState(this.currentBlockState));
         view.putInt("DespawnTimerValue", this.despawnTimerValue);
         view.putInt("DespawnTimer", this.despawnTimer);
-        super.writeCustomData(view);
+        super.addAdditionalSaveData(view);
     }
 
     @Override
-    protected void addDebugText(Consumer<Text> consumer) {
-        consumer.accept(Text.literal("DespawnTimer: " + this.despawnTimer + "/" +  this.despawnTimerValue));
-        consumer.accept(Text.literal("Damage: " + this.calculateDamage(this.getRigidBody().getFrame().getLocationDelta(new Vector3f()))));
+    protected void addDebugText(Consumer<Component> consumer) {
+        consumer.accept(Component.literal("DespawnTimer: " + this.despawnTimer + "/" +  this.despawnTimerValue));
+        consumer.accept(Component.literal("Damage: " + this.calculateDamage(this.getRigidBody().getFrame().getLocationDelta(new Vector3f()))));
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
+    protected void readAdditionalSaveData(ValueInput view) {
 
-        view.read("BlockState", NbtCompound.CODEC).ifPresent(x ->this.setBlockState(NbtHelper.toBlockState(Registries.BLOCK, x)));
-        this.despawnTimerValue = view.getInt("DespawnTimerValue", 0);
-        this.despawnTimer = view.getInt("DespawnTimer", 0);
-        super.readCustomData(view);
+        view.read("BlockState", CompoundTag.CODEC).ifPresent(x ->this.setBlockState(NbtUtils.readBlockState(BuiltInRegistries.BLOCK, x)));
+        this.despawnTimerValue = view.getIntOr("DespawnTimerValue", 0);
+        this.despawnTimer = view.getIntOr("DespawnTimer", 0);
+        super.readAdditionalSaveData(view);
     }
 
     @Override
-    public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
+    public InteractionResult interactAt(Player player, Vec3 hitPos, InteractionHand hand) {
         return super.interactAt(player, hitPos, hand);
     }
 
@@ -141,26 +141,26 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
         if (this.currentBlockState == null) {
             return ShapeUtil.CUBE;
         }
-        return ShapeUtil.getBlockShape(this.currentBlockState, this.getEntityWorld(), BlockPos.ORIGIN);
+        return ShapeUtil.getBlockShape(this.currentBlockState, this.level(), BlockPos.ZERO);
     }
 
     @Override
     public void tick() {
-        if (this.getEntityWorld() instanceof ServerWorld world) {
+        if (this.level() instanceof ServerLevel world) {
             var delta = this.getRigidBody().getFrame().getLocationDelta(new Vector3f());
 
             if (delta.lengthSquared() > 0.001) {
                 var tmp = this.getRigidBody().getFrame().getLocation(new Vector3f(), 0);
-                var vec1 = new Vec3d(tmp.x, tmp.y, tmp.z);
+                var vec1 = new Vec3(tmp.x, tmp.y, tmp.z);
                 tmp = this.getRigidBody().getFrame().getLocation(tmp, 1);
-                var col = ProjectileUtil.getEntityCollision(this.getEntityWorld(), this, vec1, new Vec3d(tmp.x, tmp.y, tmp.z), this.getBoundingBox().stretch(this.getVelocity()).expand(1.0D), Entity::canBeHitByProjectile,0.03f);
+                var col = ProjectileUtil.getEntityHitResult(this.level(), this, vec1, new Vec3(tmp.x, tmp.y, tmp.z), this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0D), Entity::canBeHitByProjectile,0.03f);
 
                 if (col != null) {
                     var d = this.calculateDamage(delta);
 
                     if (d > 0.2) {
-                        var source = this.getOwner() instanceof PlayerEntity player ? this.getEntityWorld().getDamageSources().playerAttack(player) : this.getEntityWorld().getDamageSources().fallingBlock(this);
-                        col.getEntity().damage(world, source, d);
+                        var source = this.getOwner() instanceof Player player ? this.level().damageSources().playerAttack(player) : this.level().damageSources().fallingBlock(this);
+                        col.getEntity().hurtServer(world, source, d);
                     }
                 }
             }
@@ -173,20 +173,20 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
                     if (this.despawnTimer <= 0) {
                         this.discard();
-                        var current = this.getEntityWorld().getBlockState(this.getBlockPos());
+                        var current = this.level().getBlockState(this.blockPosition());
 
-                        var ownerEntity = this.getOwner() instanceof PlayerEntity player ? player : null;
+                        var ownerEntity = this.getOwner() instanceof Player player ? player : null;
 
                         var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : new GameProfile(this.ownerProfile.id(), this.ownerProfile.name());
 
-                        if ((current.isAir() || current.isIn(BlockTags.REPLACEABLE) || (current.getBlock() instanceof FluidBlock &&
-                                (current.getFluidState().isIn(FluidTags.LAVA) || current.getFluidState().isIn(FluidTags.WATER))))
-                                && CommonProtection.canBreakBlock(this.getEntityWorld(), this.getBlockPos(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.getEntityWorld(), this.getBlockPos(), profile, ownerEntity)) {
-                            this.getEntityWorld().breakBlock(this.getBlockPos(), true);
-                            this.getEntityWorld().setBlockState(this.getBlockPos(), this.currentBlockState);
+                        if ((current.isAir() || current.is(BlockTags.REPLACEABLE) || (current.getBlock() instanceof LiquidBlock &&
+                                (current.getFluidState().is(FluidTags.LAVA) || current.getFluidState().is(FluidTags.WATER))))
+                                && CommonProtection.canBreakBlock(this.level(), this.blockPosition(), profile, ownerEntity) && CommonProtection.canPlaceBlock(this.level(), this.blockPosition(), profile, ownerEntity)) {
+                            this.level().destroyBlock(this.blockPosition(), true);
+                            this.level().setBlockAndUpdate(this.blockPosition(), this.currentBlockState);
                         } else {
-                            BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.getEntityWorld().getBlockEntity(this.getBlockPos()) : null;
-                            Block.dropStacks(this.currentBlockState, this.getEntityWorld(), this.getBlockPos(), blockEntity, this, ItemStack.EMPTY);
+                            BlockEntity blockEntity = this.currentBlockState.hasBlockEntity() ? this.level().getBlockEntity(this.blockPosition()) : null;
+                            Block.dropResources(this.currentBlockState, this.level(), this.blockPosition(), blockEntity, this, ItemStack.EMPTY);
                         }
                         return;
                     }
@@ -208,9 +208,9 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    protected Box calculateDefaultBoundingBox(Vec3d pos) {
+    protected AABB makeBoundingBox(Vec3 pos) {
         if (this.getRigidBody() == null) {
-            return super.calculateDefaultBoundingBox(pos);
+            return super.makeBoundingBox(pos);
         }
         return this.getRigidBody().getCurrentMinecraftBoundingBox();
     }

@@ -1,21 +1,20 @@
 package eu.pb4.physicstoys.other;
 
 import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
-
 import java.util.IdentityHashMap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ShapeUtil {
     private static final IdentityHashMap<BlockState, MinecraftShape.Convex> BLOCK_SHAPE_MAP = new IdentityHashMap<>();
-    public static final MinecraftShape.Convex CUBE = MinecraftShape.convex(new Box(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5));
-    public static final MinecraftShape.Convex FLAT_ITEM = MinecraftShape.convex(new Box(-0.25, -0.25, -0.1, 0.25, 0.25, 0.1));
+    public static final MinecraftShape.Convex CUBE = MinecraftShape.convex(new AABB(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5));
+    public static final MinecraftShape.Convex FLAT_ITEM = MinecraftShape.convex(new AABB(-0.25, -0.25, -0.1, 0.25, 0.25, 0.1));
 
-    public static MinecraftShape.Convex getBlockShape(BlockState state, World world, BlockPos pos) {
-        if (state.getBlock().hasDynamicBounds()) {
+    public static MinecraftShape.Convex getBlockShape(BlockState state, Level world, BlockPos pos) {
+        if (state.getBlock().hasDynamicShape()) {
             return createBlockShape(state, world);
         }
 
@@ -27,10 +26,10 @@ public class ShapeUtil {
         return shape;
     }
 
-    private static MinecraftShape.Convex createBlockShape(BlockState state, World world) {
-        VoxelShape box = state.getCollisionShape(world, BlockPos.ORIGIN);
+    private static MinecraftShape.Convex createBlockShape(BlockState state, Level world) {
+        VoxelShape box = state.getCollisionShape(world, BlockPos.ZERO);
         if (box.isEmpty()) {
-            box = state.getOutlineShape(world, BlockPos.ORIGIN);
+            box = state.getShape(world, BlockPos.ZERO);
         }
 
         var shape = MinecraftShape.convex(box);

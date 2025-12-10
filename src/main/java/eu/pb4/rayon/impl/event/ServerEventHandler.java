@@ -21,13 +21,13 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class ServerEventHandler {
     private static PhysicsThread thread;
@@ -59,7 +59,7 @@ public final class ServerEventHandler {
         EntityTrackingEvents.STOP_TRACKING.register(ServerEventHandler::onStopTrackingEntity);
     }
 
-    public static void onBlockUpdate(World level, BlockState blockState, BlockPos blockPos) {
+    public static void onBlockUpdate(Level level, BlockState blockState, BlockPos blockPos) {
         MinecraftSpace.getOptional(level).ifPresent(space -> space.doBlockUpdate(blockPos));
     }
 
@@ -77,11 +77,11 @@ public final class ServerEventHandler {
         }
     }
 
-    public static void onStartLevelTick(World level) {
+    public static void onStartLevelTick(Level level) {
         MinecraftSpace.get(level).step();
     }
 
-    public static void onLevelLoad(MinecraftServer server, ServerWorld level) {
+    public static void onLevelLoad(MinecraftServer server, ServerLevel level) {
         final var space = new MinecraftSpace(thread, level);
         ((SpaceStorage) level).setSpace(space);
         PhysicsSpaceEvents.INIT.invoker().onInit(space);
@@ -89,40 +89,40 @@ public final class ServerEventHandler {
 
     public static void onElementAddedToSpace(MinecraftSpace space, ElementRigidBody rigidBody) {
         if (rigidBody instanceof EntityRigidBody entityBody) {
-            final var pos = entityBody.getElement().cast().getEntityPos();
+            final var pos = entityBody.getElement().cast().position();
             entityBody.setPhysicsLocation(Convert.toBullet(pos));
         }
     }
 
-    public static void onEntityLoad(Entity entity, World world) {
+    public static void onEntityLoad(Entity entity, Level world) {
         if (EntityPhysicsElement.is(entity) && !PlayerLookup.tracking(entity).isEmpty()) {
-            var space = MinecraftSpace.get(entity.getEntityWorld());
+            var space = MinecraftSpace.get(entity.level());
             space.getWorkerThread().execute(() -> space.addCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }
 
-    public static void onStartTrackingEntity(Entity entity, ServerPlayerEntity player) {
+    public static void onStartTrackingEntity(Entity entity, ServerPlayer player) {
         if (EntityPhysicsElement.is(entity)) {
-            var space = MinecraftSpace.get(entity.getEntityWorld());
+            var space = MinecraftSpace.get(entity.level());
             space.getWorkerThread().execute(() -> space.addCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }
 
-    public static void onStopTrackingEntity(Entity entity, ServerPlayerEntity player) {
+    public static void onStopTrackingEntity(Entity entity, ServerPlayer player) {
         if (EntityPhysicsElement.is(entity) && PlayerLookup.tracking(entity).isEmpty()) {
-            var space = MinecraftSpace.get(entity.getEntityWorld());
+            var space = MinecraftSpace.get(entity.level());
             space.getWorkerThread().execute(() -> space.removeCollisionObject(EntityPhysicsElement.get(entity).getRigidBody()));
         }
     }
 
-    public static void onEntityStartLevelTick(World level) {
+    public static void onEntityStartLevelTick(Level level) {
         var space = MinecraftSpace.get(level);
         EntityCollisionGenerator.step(space);
 
         for (var rigidBody : space.getRigidBodiesByClass(EntityRigidBody.class)) {
             /* Set entity position */
             var location = rigidBody.getFrame().getLocation(new Vector3f(), 1.0f);
-            rigidBody.getElement().cast().updatePosition(location.x, location.y, location.z);
+            rigidBody.getElement().cast().absSnapTo(location.x, location.y, location.z);
         }
     }
 }

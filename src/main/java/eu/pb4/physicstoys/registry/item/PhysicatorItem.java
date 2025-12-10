@@ -3,19 +3,18 @@ package eu.pb4.physicstoys.registry.item;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 public class PhysicatorItem extends Item implements VanillaModeledPolymerItem {
-    public PhysicatorItem(Settings settings) {
+    public PhysicatorItem(Properties settings) {
         super(settings);
     }
 
@@ -25,13 +24,13 @@ public class PhysicatorItem extends Item implements VanillaModeledPolymerItem {
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        var blockState = context.getWorld().getBlockState(context.getBlockPos());
-        context.getWorld().setBlockState(context.getBlockPos(), Blocks.AIR.getDefaultState(), Block.FORCE_STATE);
+    public InteractionResult useOn(UseOnContext context) {
+        var blockState = context.getLevel().getBlockState(context.getClickedPos());
+        context.getLevel().setBlock(context.getClickedPos(), Blocks.AIR.defaultBlockState(), Block.UPDATE_KNOWN_SHAPE);
 
-        var entity = BlockPhysicsEntity.create(context.getWorld(), blockState, context.getBlockPos());
-        context.getWorld().spawnEntity(entity);
+        var entity = BlockPhysicsEntity.create(context.getLevel(), blockState, context.getClickedPos());
+        context.getLevel().addFreshEntity(entity);
 
-        return super.useOnBlock(context);
+        return super.useOn(context);
     }
 }

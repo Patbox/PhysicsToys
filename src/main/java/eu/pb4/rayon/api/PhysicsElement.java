@@ -5,7 +5,7 @@ import com.jme3.math.Vector3f;
 import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.shape.MinecraftShape;
 import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 /**

@@ -3,9 +3,8 @@ package eu.pb4.rayon.impl.bullet.collision.space.generator;
 import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.TerrainRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.space.MinecraftSpace;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.HashSet;
+import net.minecraft.core.BlockPos;
 
 /**
  * Used for loading blocks into the simulation so that rigid bodies can interact with them.
@@ -21,9 +20,9 @@ public class TerrainGenerator {
                 continue;
             }
 
-            final var aabb = rigidBody.getCurrentMinecraftBoundingBox().expand(0.5f);
+            final var aabb = rigidBody.getCurrentMinecraftBoundingBox().inflate(0.5f);
 
-            BlockPos.stream(aabb).forEach(blockPos -> {
+            BlockPos.betweenClosedStream(aabb).forEach(blockPos -> {
                 chunkCache.getBlockData(blockPos).ifPresent(blockData -> {
                     space.getTerrainObjectAt(blockPos).ifPresentOrElse(terrain -> {
                         if (blockData.blockState() != terrain.getBlockState()) {

@@ -7,7 +7,7 @@ import eu.pb4.physicstoys.registry.USRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
 public class PhysicsToysMod implements ModInitializer {
@@ -16,7 +16,7 @@ public class PhysicsToysMod implements ModInitializer {
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
 
     public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @Override

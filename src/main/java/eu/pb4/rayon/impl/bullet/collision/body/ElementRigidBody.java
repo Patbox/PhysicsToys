@@ -11,14 +11,12 @@ import eu.pb4.rayon.impl.bullet.thread.util.Clock;
 import eu.pb4.rayon.impl.util.Frame;
 import eu.pb4.rayon.api.math.QuaternionHelper;
 import eu.pb4.rayon.api.math.VectorHelper;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.dynamic.Codecs;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.ChunkSectionPos;
-
 import java.security.InvalidParameterException;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.phys.AABB;
 
 public abstract class ElementRigidBody extends MinecraftRigidBody {
     public static final float SLEEP_TIME_IN_SECONDS = 2.0f;
@@ -32,7 +30,7 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
     private BuoyancyType buoyancyType;
     private DragType dragType;
     private BoundingBox currentBoundingBox = new BoundingBox();
-    private Box currentMinecraftBoundingBox = new Box(0, 0, 0, 0, 0 ,0);
+    private AABB currentMinecraftBoundingBox = new AABB(0, 0, 0, 0, 0 ,0);
 
     public ElementRigidBody(PhysicsElement element, MinecraftSpace space, MinecraftShape shape, float mass, float dragCoefficient, float friction, float restitution) {
         super(space, shape, mass);
@@ -57,10 +55,10 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
         return this.element;
     }
 
-    public void readTagInfo(ReadView view) {
-        view.read("orientation", Codecs.QUATERNION_F).map(Convert::toBullet).ifPresent(this::setPhysicsRotation);
-        view.read("linearVelocity", Codecs.VECTOR_3F).map(Convert::toBullet).ifPresent(this::setLinearVelocity);
-        view.read("angularVelocity", Codecs.VECTOR_3F).map(Convert::toBullet).ifPresent(this::setAngularVelocity);
+    public void readTagInfo(ValueInput view) {
+        view.read("orientation", ExtraCodecs.QUATERNIONF_COMPONENTS).map(Convert::toBullet).ifPresent(this::setPhysicsRotation);
+        view.read("linearVelocity", ExtraCodecs.VECTOR3F).map(Convert::toBullet).ifPresent(this::setLinearVelocity);
+        view.read("angularVelocity", ExtraCodecs.VECTOR3F).map(Convert::toBullet).ifPresent(this::setAngularVelocity);
 
 //        this.setMass(tag.getFloat("mass"));
 //        this.setDragCoefficient(tag.getFloat("dragCoefficient"));
@@ -121,11 +119,11 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
     }
 
     public boolean isNear(BlockPos blockPos) {
-        return this.currentMinecraftBoundingBox.intersects(new Box(blockPos).expand(0.5f));
+        return this.currentMinecraftBoundingBox.intersects(new AABB(blockPos).inflate(0.5f));
     }
 
-    public boolean isNear(ChunkSectionPos blockPos) {
-        return this.currentMinecraftBoundingBox.intersects(new Box(blockPos.getCenterPos()).expand(8.5f));
+    public boolean isNear(SectionPos blockPos) {
+        return this.currentMinecraftBoundingBox.intersects(new AABB(blockPos.center()).inflate(8.5f));
     }
 
     public boolean isWaterBuoyancyEnabled() {
@@ -150,7 +148,7 @@ public abstract class ElementRigidBody extends MinecraftRigidBody {
         this.currentMinecraftBoundingBox = Convert.toMinecraft(this.currentBoundingBox);
     }
 
-    public Box getCurrentMinecraftBoundingBox() {
+    public AABB getCurrentMinecraftBoundingBox() {
         return currentMinecraftBoundingBox;
     }
 

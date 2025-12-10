@@ -15,11 +15,10 @@ import eu.pb4.rayon.impl.bullet.collision.space.cache.ChunkCache;
 import eu.pb4.rayon.impl.bullet.collision.space.generator.TerrainGenerator;
 import eu.pb4.rayon.impl.bullet.collision.space.storage.SpaceStorage;
 import eu.pb4.rayon.impl.bullet.thread.PhysicsThread;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,27 +44,27 @@ public class MinecraftSpace extends PhysicsSpace implements PhysicsCollisionList
     private final CompletableFuture[] futures = new CompletableFuture[3];
     private final Map<BlockPos, TerrainRigidBody> terrainMap;
     private final PhysicsThread thread;
-    private final World level;
+    private final Level level;
     private final ChunkCache chunkCache;
 
     private volatile boolean stepping;
-    private final Set<ChunkSectionPos> previousBlockUpdates;
+    private final Set<SectionPos> previousBlockUpdates;
 
     /**
      * Allows users to retrieve the {@link MinecraftSpace} associated
-     * with any given {@link World} object (client or server).
+     * with any given {@link Level} object (client or server).
      * @param level the level to get the physics space from
      * @return the {@link MinecraftSpace}
      */
-    public static MinecraftSpace get(World level) {
+    public static MinecraftSpace get(Level level) {
         return ((SpaceStorage) level).getSpace();
     }
 
-    public static Optional<MinecraftSpace> getOptional(World level) {
+    public static Optional<MinecraftSpace> getOptional(Level level) {
         return Optional.ofNullable(get(level));
     }
 
-    public MinecraftSpace(PhysicsThread thread, World level) {
+    public MinecraftSpace(PhysicsThread thread, Level level) {
         super(
 //                new Vector3f(-Level.MAX_LEVEL_SIZE, Level.MIN_ENTITY_SPAWN_Y, -Level.MAX_LEVEL_SIZE),
 //                new Vector3f(Level.MAX_LEVEL_SIZE, Level.MAX_ENTITY_SPAWN_Y, Level.MAX_LEVEL_SIZE),
@@ -184,7 +183,7 @@ public class MinecraftSpace extends PhysicsSpace implements PhysicsCollisionList
     }
 
     public void doBlockUpdate(BlockPos blockPos) {
-        this.previousBlockUpdates.add(ChunkSectionPos.from(blockPos));
+        this.previousBlockUpdates.add(SectionPos.of(blockPos));
     }
 
     public void wakeNearbyElementRigidBodies(BlockPos blockPos) {
@@ -231,7 +230,7 @@ public class MinecraftSpace extends PhysicsSpace implements PhysicsCollisionList
         return this.thread;
     }
 
-    public World getLevel() {
+    public Level getLevel() {
         return this.level;
     }
 

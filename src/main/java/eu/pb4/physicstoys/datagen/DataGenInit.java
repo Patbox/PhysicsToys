@@ -8,19 +8,18 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootTableProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.advancement.criterion.InventoryChangedCriterion;
-import net.minecraft.block.Blocks;
-import net.minecraft.data.recipe.RecipeExporter;
-import net.minecraft.data.recipe.RecipeGenerator;
-import net.minecraft.data.recipe.ShapedRecipeJsonBuilder;
-import net.minecraft.data.recipe.ShapelessRecipeJsonBuilder;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
-
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import java.util.concurrent.CompletableFuture;
 
 public class DataGenInit implements DataGeneratorEntrypoint {
@@ -34,12 +33,12 @@ public class DataGenInit implements DataGeneratorEntrypoint {
     }
 
     private static class CBlockTags extends FabricTagProvider.BlockTagProvider {
-        public CBlockTags(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public CBlockTags(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup arg) {
+        protected void addTags(HolderLookup.Provider arg) {
             this.valueLookupBuilder(PhysicsTags.IS_FLOATING_ON_WATER)
                     .addOptionalTag(BlockTags.REPLACEABLE)
                     .addOptionalTag(BlockTags.PLANKS)
@@ -71,58 +70,58 @@ public class DataGenInit implements DataGeneratorEntrypoint {
     }
 
     private static class LootTables extends FabricBlockLootTableProvider {
-        protected LootTables(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        protected LootTables(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
         @Override
         public void generate() {
-            this.addDrop(USRegistry.PHYSICAL_TNT_BLOCK);
+            this.dropSelf(USRegistry.PHYSICAL_TNT_BLOCK);
         }
     }
 
     private static class Recipes extends FabricRecipeProvider {
-        public Recipes(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public Recipes(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup registryLookup, RecipeExporter exporter) {
-            return new RecipeGenerator(registryLookup, exporter) {
+        protected RecipeProvider createRecipeProvider(HolderLookup.Provider registryLookup, RecipeOutput exporter) {
+            return new RecipeProvider(registryLookup, exporter) {
                 @Override
-                public void generate() {
-                    var itemWrap = registryLookup.getOrThrow(RegistryKeys.ITEM);
-                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
-                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.NETHER_STAR))
+                public void buildRecipes() {
+                    var itemWrap = registryLookup.lookupOrThrow(Registries.ITEM);
+                    ShapedRecipeBuilder.shaped(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
+                            .unlockedBy("get_item", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHER_STAR))
                             .pattern("pia")
                             .pattern("p  ")
-                            .input('a', Items.ENDER_EYE)
-                            .input('p', Items.IRON_INGOT)
-                            .input('i', Items.NETHER_STAR)
-                            .offerTo(exporter);
+                            .define('a', Items.ENDER_EYE)
+                            .define('p', Items.IRON_INGOT)
+                            .define('i', Items.NETHER_STAR)
+                            .save(output);
 
-                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.TNT_CANNON_ITEM)
-                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
+                    ShapedRecipeBuilder.shaped(itemWrap, RecipeCategory.REDSTONE, USRegistry.TNT_CANNON_ITEM)
+                            .unlockedBy("get_item", InventoryChangeTrigger.TriggerInstance.hasItems(USRegistry.PHYSICS_GUN_ITEM))
                             .pattern("p ")
                             .pattern("i ")
-                            .input('p', Items.COPPER_INGOT)
-                            .input('i', USRegistry.PHYSICS_GUN_ITEM)
-                            .offerTo(exporter);
+                            .define('p', Items.COPPER_INGOT)
+                            .define('i', USRegistry.PHYSICS_GUN_ITEM)
+                            .save(output);
 
-                    ShapedRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.BASEBALL_BAT_ITEM)
-                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(USRegistry.PHYSICS_GUN_ITEM))
+                    ShapedRecipeBuilder.shaped(itemWrap, RecipeCategory.REDSTONE, USRegistry.BASEBALL_BAT_ITEM)
+                            .unlockedBy("get_item", InventoryChangeTrigger.TriggerInstance.hasItems(USRegistry.PHYSICS_GUN_ITEM))
                             .pattern(" p ")
                             .pattern("ipi")
                             .pattern(" i ")
-                            .input('p', ItemTags.PLANKS)
-                            .input('i', Items.STICK)
-                            .offerTo(exporter);
+                            .define('p', ItemTags.PLANKS)
+                            .define('i', Items.STICK)
+                            .save(output);
 
-                    ShapelessRecipeJsonBuilder.create(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICAL_TNT_ITEM, 8)
-                            .criterion("get_item", InventoryChangedCriterion.Conditions.items(Items.TNT))
-                            .input(Items.ENDER_EYE)
-                            .input(Items.TNT, 8)
-                            .offerTo(exporter);
+                    ShapelessRecipeBuilder.shapeless(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICAL_TNT_ITEM, 8)
+                            .unlockedBy("get_item", InventoryChangeTrigger.TriggerInstance.hasItems(Items.TNT))
+                            .requires(Items.ENDER_EYE)
+                            .requires(Items.TNT, 8)
+                            .save(output);
 
                 }
             };

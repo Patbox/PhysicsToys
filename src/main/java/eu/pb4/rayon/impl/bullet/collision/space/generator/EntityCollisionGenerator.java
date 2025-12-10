@@ -22,12 +22,12 @@ public class EntityCollisionGenerator {
             final var vanillaBox = rigidBody.getCurrentMinecraftBoundingBox();
 
             for (var entity : space.getWorkerThread().getEntitySupplier().getInsideOf(rigidBody, vanillaBox)) {
-                final var entityPos = Convert.toBullet(entity.getEntityPos().add(0, entity.getBoundingBox().getLengthY(), 0));
+                final var entityPos = Convert.toBullet(entity.position().add(0, entity.getBoundingBox().getYsize(), 0));
                 final var normal = location.subtract(entityPos).multLocal(new Vector3f(1, 0, 1)).normalize();
 
-                final var intersection = entity.getBoundingBox().intersection(vanillaBox);
+                final var intersection = entity.getBoundingBox().intersect(vanillaBox);
                 final var force = normal.clone()
-                        .multLocal((float) intersection.getAverageSideLength() / (float) vanillaBox.getAverageSideLength())
+                        .multLocal((float) intersection.getSize() / (float) vanillaBox.getSize())
                         .multLocal(mass)
                         .multLocal(new Vector3f(1, 0, 1));
                 rigidBody.applyCentralImpulse(force);

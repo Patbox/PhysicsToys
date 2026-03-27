@@ -3,6 +3,7 @@ package eu.pb4.physicstoys.registry.item;
 import com.jme3.math.Vector3f;
 import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
 import eu.pb4.rayon.impl.bullet.math.Convert;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,7 +27,7 @@ import eu.pb4.physicstoys.registry.entity.BasePhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.BlockPhysicsEntity;
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, PhysicsEntityInteractor {
     public PhysicsGunItem(Properties settings) {
@@ -118,7 +119,7 @@ public class PhysicsGunItem extends Item implements VanillaModeledPolymerItem, P
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.DYED_COLOR, new DyedItemColor(stack.has(USRegistry.TARGET_COMPONENT) ? 0xffe357 : 0xbd7100));
     }
 

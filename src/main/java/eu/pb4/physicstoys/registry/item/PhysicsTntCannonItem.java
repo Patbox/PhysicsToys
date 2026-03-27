@@ -2,6 +2,8 @@ package eu.pb4.physicstoys.registry.item;
 
 import eu.pb4.polymer.core.api.item.VanillaModeledPolymerItem;
 import eu.pb4.rayon.impl.bullet.math.Convert;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,7 +18,6 @@ import eu.pb4.physicstoys.registry.USRegistry;
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 public class PhysicsTntCannonItem extends Item implements VanillaModeledPolymerItem {
     public PhysicsTntCannonItem(Properties settings) {
@@ -45,7 +46,7 @@ public class PhysicsTntCannonItem extends Item implements VanillaModeledPolymerI
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.DYED_COLOR, new DyedItemColor(0xFF2222));
     }
 }

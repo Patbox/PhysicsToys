@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageSource;
@@ -35,7 +36,7 @@ public class PhysicalExplosion extends ServerExplosion {
     private final double y;
     private final double z;
     private final Player player;
-    private final GameProfile playerProfile;
+    private final NameAndId playerProfile;
 
     public PhysicalExplosion(ServerLevel world, @Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionDamageCalculator behavior, Vec3 pos, float power, boolean createFire, Explosion.BlockInteraction destructionType) {
         super(world, entity, damageSource, behavior, pos, power, createFire, destructionType);
@@ -45,13 +46,13 @@ public class PhysicalExplosion extends ServerExplosion {
         this.y = pos.y;
         this.z = pos.z;
         this.player = entity instanceof TraceableEntity && ((TraceableEntity) entity).getOwner() instanceof Player player ? player : null;
-        this.playerProfile = entity instanceof PhysicalTntEntity physicalTntEntity && physicalTntEntity.ownerProfile != null ? new GameProfile(physicalTntEntity.ownerProfile.id(), physicalTntEntity.ownerProfile.name()) : CommonProtection.UNKNOWN;
+        this.playerProfile = entity instanceof PhysicalTntEntity physicalTntEntity && physicalTntEntity.ownerProfile != null ? physicalTntEntity.ownerProfile : CommonProtection.UNKNOWN;
     }
 
 
     @Override
     protected void interactWithBlocks(List<BlockPos> positions) {
-        Util.shuffle(positions, this.world.random);
+        Util.shuffle(positions, this.world.getRandom());
         for (var blockPos : positions) {
             var blockState = this.world.getBlockState(blockPos);
             Block block = blockState.getBlock();

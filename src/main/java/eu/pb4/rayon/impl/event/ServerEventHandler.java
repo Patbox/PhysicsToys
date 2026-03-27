@@ -18,7 +18,7 @@ import eu.pb4.rayon.api.event.ServerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.core.BlockPos;
@@ -48,9 +48,9 @@ public final class ServerEventHandler {
         ServerTickEvents.END_SERVER_TICK.register(ServerEventHandler::onServerTick);
 
         // Level Events
-        ServerWorldEvents.LOAD.register(ServerEventHandler::onLevelLoad);
-        ServerTickEvents.START_WORLD_TICK.register(ServerEventHandler::onStartLevelTick);
-        ServerTickEvents.START_WORLD_TICK.register(ServerEventHandler::onEntityStartLevelTick);
+        ServerLevelEvents.LOAD.register(ServerEventHandler::onLevelLoad);
+        ServerTickEvents.START_LEVEL_TICK.register(ServerEventHandler::onStartLevelTick);
+        ServerTickEvents.START_LEVEL_TICK.register(ServerEventHandler::onEntityStartLevelTick);
         ServerEvents.Block.BLOCK_UPDATE.register(ServerEventHandler::onBlockUpdate);
 
         // Entity Events

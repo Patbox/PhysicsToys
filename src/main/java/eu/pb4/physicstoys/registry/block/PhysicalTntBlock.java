@@ -2,6 +2,7 @@ package eu.pb4.physicstoys.registry.block;
 
 import eu.pb4.physicstoys.registry.entity.PhysicalTntEntity;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -29,7 +30,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 public class PhysicalTntBlock extends Block implements PolymerBlock {
     public static final BooleanProperty UNSTABLE;
@@ -87,7 +87,7 @@ public class PhysicalTntBlock extends Block implements PolymerBlock {
     public void wasExploded(ServerLevel world, BlockPos pos, Explosion explosion) {
         var tntEntity = PhysicalTntEntity.of(world, (double) pos.getX() + 0.5D, pos.getY(), (double) pos.getZ() + 0.5D, explosion.getIndirectSourceEntity());
         int i = tntEntity.getFuse();
-        tntEntity.setFuse((short) (world.random.nextInt(i / 4) + i / 8));
+        tntEntity.setFuse((short) (world.getRandom().nextInt(i / 4) + i / 8));
         world.addFreshEntity(tntEntity);
     }
 

@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import eu.pb4.physicstoys.registry.entity.BasePhysicsEntity;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 public class BaseballBatItem extends Item implements VanillaModeledPolymerItem, PhysicsEntityInteractor {
     public BaseballBatItem(Properties settings) {

@@ -12,9 +12,8 @@ import eu.pb4.physicstoys.registry.item.PhysicsTntCannonItem;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
-import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
 import eu.pb4.polymer.core.api.other.PolymerComponent;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
@@ -52,7 +51,7 @@ public class USRegistry {
     public static final PhysicsTntCannonItem TNT_CANNON_ITEM = register("tnt_cannon", (key) -> new PhysicsTntCannonItem(new Item.Properties().setId(key).stacksTo(1)), BuiltInRegistries.ITEM);
 
 
-    public static CreativeModeTab ITEM_GROUP = FabricItemGroup.builder()
+    public static CreativeModeTab ITEM_GROUP = PolymerCreativeModeTabUtils.builder()
             .icon(Items.APPLE::getDefaultInstance)
             .title(Component.translatable("itemGroup.physics_toys"))
             .displayItems((displayContext, entries) -> {
@@ -81,6 +80,6 @@ public class USRegistry {
     }
 
     public static void register() {
-        PolymerItemGroupUtils.registerPolymerItemGroup(PhysicsToysMod.id("item_group"), ITEM_GROUP);
+        PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(PhysicsToysMod.id("item_group"), ITEM_GROUP);
     }
 }

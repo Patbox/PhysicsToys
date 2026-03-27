@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.13-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.modrinth.minotaur' version '2.+'
 }
@@ -51,16 +51,14 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	modImplementation include("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
-	modImplementation include("eu.pb4:polymer-core:${project.polymer_version}")
-	modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
-	modImplementation include("eu.pb4:common-protection-api:${project.common_protection_version}")
-	modImplementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}")
+	implementation include("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+	implementation "eu.pb4:polymer-core:${project.polymer_version}"
+	implementation "eu.pb4:polymer-virtual-entity:${project.polymer_version}"
+	implementation include("eu.pb4:common-protection-api:${project.common_protection_version}")
 
 	implementation include("com.github.stephengold:Libbulletjme:21.2.1")
 }
@@ -77,7 +75,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -120,19 +118,21 @@ if (System.getenv("MODRINTH")) {
 		projectId = 'JHvtQzoF'// The ID of your modrinth project, slugs will not work.
 		versionNumber = "" + version // The version of the mod to upload.
 		versionType = "release"
-		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
 		gameVersions = [((String) project.minecraft_version)]
 		changelog = System.getenv("CHANGELOG")
-		loaders = ["fabric", "quilt"]
+		loaders = ["fabric"]
 		dependencies { // A special DSL for creating dependencies
 			// scope.type
 			// The scope can be `required`, `optional`, `incompatible`, or `embedded`
 			// The type can either be `project` or `version`
 			//required.project "rayon"
+
+			required.project "polymer"
 		}
 	}
 
-	remapJar {
+	jar {
 		finalizedBy project.tasks.modrinth
 	}
 }

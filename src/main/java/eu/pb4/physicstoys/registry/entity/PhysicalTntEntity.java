@@ -79,7 +79,7 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements TraceableEn
                 this.explode();
             }
         } else {
-            this.updateInWaterStateAndDoFluidPushing();
+            //this.updateInWaterStateAndDoFluidPushing();
             ((ServerLevel) this.level()).sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.25D, this.getZ(), 0, 0.0D, 0.0D, 0.0D, 0);
         }
 

@@ -132,11 +132,6 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
     }
 
     @Override
-    public InteractionResult interactAt(Player player, Vec3 hitPos, InteractionHand hand) {
-        return super.interactAt(player, hitPos, hand);
-    }
-
-    @Override
     public MinecraftShape.Convex createShape() {
         if (this.currentBlockState == null) {
             return ShapeUtil.CUBE;
@@ -177,7 +172,7 @@ public class BlockPhysicsEntity extends BasePhysicsEntity {
 
                         var ownerEntity = this.getOwner() instanceof Player player ? player : null;
 
-                        var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : new GameProfile(this.ownerProfile.id(), this.ownerProfile.name());
+                        var profile = this.ownerProfile == null ? CommonProtection.UNKNOWN : this.ownerProfile;
 
                         if ((current.isAir() || current.is(BlockTags.REPLACEABLE) || (current.getBlock() instanceof LiquidBlock &&
                                 (current.getFluidState().is(FluidTags.LAVA) || current.getFluidState().is(FluidTags.WATER))))

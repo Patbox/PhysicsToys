@@ -2,6 +2,7 @@ package eu.pb4.physicstoys.registry.entity;
 
 import com.jme3.math.Vector3f;
 import com.mojang.authlib.GameProfile;
+import eu.pb4.polymer.virtualentity.api.data.EntityData;
 import eu.pb4.rayon.api.EntityPhysicsElement;
 import eu.pb4.rayon.impl.bullet.collision.body.ElementRigidBody;
 import eu.pb4.rayon.impl.bullet.collision.body.EntityRigidBody;
@@ -15,9 +16,8 @@ import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
-import eu.pb4.polymer.virtualentity.api.tracker.DisplayTrackedData;
-import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
-import eu.pb4.polymer.virtualentity.api.tracker.InteractionTrackedData;
+import eu.pb4.polymer.virtualentity.api.data.DisplayEntityData;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
@@ -48,7 +48,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Set;
@@ -184,13 +183,13 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
         var empty = data.isEmpty();
         data.clear();
         if (initial || empty) {
-            //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.NO_GRAVITY, true));
+            //data.add(DataTracker.SerializedEntry.of(EntityEntityData.NO_GRAVITY, true));
             //data.add(DataTracker.SerializedEntry.of(ArmorStandEntity.ARMOR_STAND_FLAGS, (byte) ArmorStandEntity.MARKER_FLAG));
-            //data.add(DataTracker.SerializedEntry.of(EntityTrackedData.SILENT, true));
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.HEIGHT, 0f));
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.WIDTH, 0f));
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.TELEPORTATION_DURATION, this.getType().updateInterval()));
-            data.add(SynchedEntityData.DataValue.create(EntityTrackedData.FLAGS, (byte) (1 << EntityTrackedData.INVISIBLE_FLAG_INDEX)));
+            //data.add(DataTracker.SerializedEntry.of(EntityEntityData.SILENT, true));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.HEIGHT, 0f));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.WIDTH, 0f));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.TELEPORTATION_DURATION, this.getType().updateInterval()));
+            data.add(SynchedEntityData.DataValue.create(EntityData.FLAGS, (byte) (1 << EntityData.INVISIBLE_FLAG_INDEX)));
         }
     }
 
@@ -247,14 +246,14 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
     }
 
     @Override
-    public InteractionResult interactAt(Player player, Vec3 hitPos, InteractionHand hand) {
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
         var stack = player.getItemInHand(hand);
 
         if (stack.getItem() instanceof PhysicsEntityInteractor physicsGunItem) {
-            physicsGunItem.onInteractWith(player, stack, hitPos, this);
+            physicsGunItem.onInteractWith(player, stack, location, this);
         }
 
-        return super.interactAt(player, hitPos, hand);
+        return super.interact(player, hand, location);
     }
 
     @Override

@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootSubProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.SimpleFabricLootTableSubProvider;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.triggers.InventoryChangeTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -18,7 +18,10 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.references.BlockIds;
+import net.minecraft.references.BlockItemIds;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -47,7 +50,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
 
         @Override
         protected void addTags(HolderLookup.Provider arg) {
-            this.valueLookupBuilder(PhysicsTags.IS_FLOATING_ON_WATER)
+            this.tag(PhysicsTags.IS_FLOATING_ON_WATER)
                     .addOptionalTag(BlockTags.REPLACEABLE)
                     .addOptionalTag(BlockTags.PLANKS)
                     .addOptionalTag(BlockTags.LOGS)
@@ -55,7 +58,7 @@ public class DataGenInit implements DataGeneratorEntrypoint {
                     .addOptionalTag(BlockTags.WOOL)
                     .addOptionalTag(BlockTags.CAMPFIRES)
                     .addOptionalTag(BlockTags.WOOL_CARPETS)
-                    .addOptionalTag(BlockTags.SAPLINGS)
+                    .addOptionalTag(BlockItemTags.SAPLINGS.block())
                     .addOptionalTag(BlockTags.CROPS)
                     .addOptionalTag(BlockTags.ALL_SIGNS)
                     .addOptionalTag(BlockTags.SNOW)
@@ -69,10 +72,10 @@ public class DataGenInit implements DataGeneratorEntrypoint {
                     .addOptionalTag(BlockTags.WOODEN_STAIRS)
                     .addOptionalTag(BlockTags.WOODEN_TRAPDOORS)
                     .addOptionalTag(BlockTags.BEEHIVES)
-                    .add(Blocks.BAMBOO)
-                    .add(Blocks.NOTE_BLOCK)
-                    .add(Blocks.JUKEBOX)
-                    .add(Blocks.DEAD_BUSH)
+                    .add(BlockItemIds.BAMBOO.block())
+                    .add(BlockItemIds.NOTE_BLOCK.block())
+                    .add(BlockItemIds.JUKEBOX.block())
+                    .add(BlockItemIds.DEAD_BUSH.block())
             ;
         }
     }

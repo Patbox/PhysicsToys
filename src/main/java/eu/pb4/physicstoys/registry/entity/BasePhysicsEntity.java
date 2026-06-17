@@ -36,10 +36,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -175,7 +172,7 @@ public abstract class BasePhysicsEntity extends Entity implements PolymerEntity,
 
     @Override
     public EntityType<?> getPolymerEntityType(PacketContext context) {
-        return EntityType.BLOCK_DISPLAY;
+        return EntityTypes.BLOCK_DISPLAY;
     }
 
     @Override

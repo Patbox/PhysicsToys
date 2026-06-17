@@ -72,7 +72,7 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements TraceableEn
     public void tick() {
         int i = this.getFuse() - 1;
         this.setFuse(i);
-        ((BlockDisplayElement) this.mainDisplayElement).setBlockState(this.fuse / 5 % 2 == 0 ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.TNT.defaultBlockState());
+        ((BlockDisplayElement) this.mainDisplayElement).setBlockState(this.fuse / 5 % 2 == 0 ? Blocks.CONCRETE.white().defaultBlockState() : Blocks.TNT.defaultBlockState());
         if (i <= 0) {
             this.discard();
             if (!this.level().isClientSide()) {

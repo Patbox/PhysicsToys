@@ -1,0 +1,9 @@
+// 26.3-rc-1	-999999999-01-01T00:00:00	Physics Toys/recipe
+f25820a453c5ab8e4b139382474ebf0cc3adac75 data/physics_toys/advancement/recipes/redstone/baseball_bat.json
+fe5a597bfa2f128dddfa35c9921656b706799c7f data/physics_toys/advancement/recipes/redstone/gravity_gun.json
+11eec2bc5cc3e9ee46520dfcbeae38835cc5d440 data/physics_toys/advancement/recipes/redstone/tnt.json
+af28153c45913a6ba386bfa6348b0f8dd51f13a6 data/physics_toys/advancement/recipes/redstone/tnt_cannon.json
+372b3c84f9b186531af02398ab4eff66eb74d2f0 data/physics_toys/recipe/baseball_bat.json
+32696b79aa52f63b70146683e7f0c62bc1060f6e data/physics_toys/recipe/gravity_gun.json
+ff6c69692fb9dbcb2bd817d0b5e1b294b1bba116 data/physics_toys/recipe/tnt.json
+a699b2d50735e3a56ac030eb7b5ab28083f9ade2 data/physics_toys/recipe/tnt_cannon.json

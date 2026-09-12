@@ -66,7 +66,7 @@ public interface ChunkCache {
 
         public FluidColumn(BlockPos start, Level level) {
             this.index = Integer.toUnsignedLong(start.getX()) << 32l | Integer.toUnsignedLong(start.getZ());
-            final var cursor = new BlockPos(start).mutable();
+            final var cursor = start.mutable();
             var fluidState = level.getFluidState(cursor);
 
             // find bottom block
@@ -77,7 +77,7 @@ public interface ChunkCache {
 
             cursor.set(cursor.above()); // the above loop ends at one below the bottom
             fluidState = level.getFluidState(cursor);
-            this.bottom = new FluidData(level, new BlockPos(cursor), level.getFluidState(cursor));
+            this.bottom = new FluidData(level, cursor.immutable(), level.getFluidState(cursor));
 
             // find top block
             while (!fluidState.isEmpty()) {
@@ -88,7 +88,7 @@ public interface ChunkCache {
             cursor.set(cursor.below());
             fluidState = level.getFluidState(cursor);
 
-            this.top = new FluidData(level, new BlockPos(cursor), fluidState);
+            this.top = new FluidData(level, cursor.immutable(), fluidState);
             this.height = fluidState.getHeight(level, cursor);
 
             // Water flow direction

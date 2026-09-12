@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootSubProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.SimpleFabricLootTableSubProvider;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.triggers.InventoryChangeTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +19,7 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.references.BlockIds;
 import net.minecraft.references.BlockItemIds;
 import net.minecraft.resources.ResourceKey;
@@ -26,6 +28,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootTable;
 
@@ -97,11 +100,11 @@ public class DataGenInit implements DataGeneratorEntrypoint {
         }
 
         @Override
-        protected RecipeProvider createRecipeProvider(HolderLookup.Provider registryLookup, RecipeOutput exporter) {
-            return new RecipeProvider(registryLookup, exporter) {
+        protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, BootstrapContext<Recipe<?>> bootstrapContext, BootstrapContext<Advancement> bootstrapContext1) {
+            return new RecipeProvider(bootstrapContext, bootstrapContext1) {
                 @Override
                 public void buildRecipes() {
-                    var itemWrap = registryLookup.lookupOrThrow(Registries.ITEM);
+                    var itemWrap = provider.lookupOrThrow(Registries.ITEM);
                     ShapedRecipeBuilder.shaped(itemWrap, RecipeCategory.REDSTONE, USRegistry.PHYSICS_GUN_ITEM)
                             .unlockedBy("get_item", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHER_STAR))
                             .pattern("pia")

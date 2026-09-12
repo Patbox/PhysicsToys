@@ -98,7 +98,7 @@ public class PhysicalTntEntity extends BlockPhysicsEntity implements TraceableEn
                 if (player.distanceToSqr(pos) < 4096.0) {
                     var optional = Optional.ofNullable(explosion.getHitPlayers().get(player));
                     player.connection.send(new ClientboundExplodePacket(pos, f, c, optional, particleEffect, SoundEvents.GENERIC_EXPLODE,
-                            WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build()));
+                            WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build(), true));
                 }
         }
 

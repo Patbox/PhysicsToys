@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "physics_toys:gravity_gun"
+        "recipes": "physics_toys:gravity_gun"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

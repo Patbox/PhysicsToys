@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "physics_toys:tnt"
+        "recipes": "physics_toys:tnt"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

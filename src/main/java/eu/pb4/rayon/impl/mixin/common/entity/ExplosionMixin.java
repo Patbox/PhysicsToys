@@ -23,7 +23,7 @@ public class ExplosionMixin {
             method = "hurtEntities",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Entity;push(Lnet/minecraft/world/phys/Vec3;)V"
+                    target = "Lnet/minecraft/world/entity/Entity;pushFromExplosion(Lnet/minecraft/world/phys/Vec3;)V"
             )
     )
     public Vec3 setVelocity(Vec3 velocity, @Local Entity entity) {

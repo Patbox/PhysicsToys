@@ -55,7 +55,7 @@ public class SimpleChunkCache implements ChunkCache {
             var columns = this.fluidColumnByIndex.get(columnIndex(blockPos));
 
             if (columns == null || columns.stream().noneMatch(column -> column.contains(blockPos))) {
-                var column = new FluidColumn(new BlockPos(blockPos), level);
+                var column = new FluidColumn(blockPos.immutable(), level);
                 this.fluidColumns.add(column);
                 this.fluidColumnByIndex.computeIfAbsent(column.getIndex(), (a) -> new ArrayList<>()).add(column);
             }

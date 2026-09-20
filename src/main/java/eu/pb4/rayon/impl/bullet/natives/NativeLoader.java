@@ -67,7 +67,7 @@ public class NativeLoader {
 
         final var name = switch (platform) {
             case Windows32, Windows64 -> "bulletjme.dll";
-            case Android_ARM7, Android_ARM8, Linux_ARM32, Linux_ARM64, Linux32, Linux64 -> "libbulletjme.so";
+            case Android_ARM7, Android_ARM8, Linux_ARM32, Linux_ARM64, Linux_LOONGARCH64, Linux32, Linux64 -> "libbulletjme.so";
             case MacOSX32, MacOSX64, MacOSX_ARM64 -> "libbulletjme.dylib";
             default -> throw new RuntimeException("Invalid platform " + platform);
         };
